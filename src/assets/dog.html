@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>狗狗交流群</title>
+</head>
+<body>
+<div id="wechat" style="display:none;text-align: center;margin-top:20%;font-size: 4em;font-weight: bold;">
+    请使用微信扫一扫
+</div>
+</body>
+<script>
+    function guid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    if (typeof (Storage) !== "undefined") {
+        if (!localStorage.getItem("uuid_dog")) {
+            localStorage.setItem('uuid_dog', guid());
+        }
+    }
+    window.location.replace("https://pet-lake.skysriver.com/pet-qrcode/index.html#/dog" + (window.location.search || ""));
+</script>
+</html>

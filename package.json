@@ -1,0 +1,41 @@
+{
+  "name": "ipadump-web",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "cross-env USE_MOCK=true vite --mode development",
+    "test": "cross-env USE_MOCK=false vite --mode test",
+    "prod": "cross-env USE_MOCK=false vite --mode production",
+    "build": "cross-env NODE_ENV=prod vite build",
+    "build-plus": "vue-tsc --noEmit && cross-env vite build --mode production",
+    "preview": "vite preview",
+    "upload": "cross-env vite build --mode production && gulp upload"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^1.1.4",
+    "axios": "^0.27.2",
+    "element-plus": "^2.2.0",
+    "vue": "^3.2.25",
+    "vue-axios": "^3.4.1",
+    "vue-router": "^4.0.13"
+  },
+  "devDependencies": {
+    "@babel/register": "^7.17.7",
+    "@vitejs/plugin-vue": "^2.3.3",
+    "cross-env": "^7.0.3",
+    "del": "^6.1.1",
+    "gulp": "^4.0.2",
+    "gulp-replace": "^1.1.3",
+    "mockjs": "^1.1.0",
+    "qiniu": "^7.6.0",
+    "qiniu-js": "^3.4.0",
+    "qiniu-tool-v2": "^2.1.5",
+    "sass": "^1.51.0",
+    "sass-loader": "^13.0.0",
+    "typescript": "^4.5.4",
+    "vite": "^2.9.9",
+    "vite-plugin-cdn-import": "^0.3.5",
+    "vite-plugin-mock": "^2.9.6",
+    "vue-tsc": "^0.34.7"
+  }
+}
