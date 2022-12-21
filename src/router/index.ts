@@ -1,5 +1,6 @@
 import {createRouter, createWebHashHistory, RouteRecordRaw} from "vue-router";
 import Home from "../views/Home.vue";
+import Version from "../views/Version.vue";
 
 const routes: RouteRecordRaw[] = [
     {
@@ -11,9 +12,14 @@ const routes: RouteRecordRaw[] = [
         }
     },
     {
-        path: '/:type?',
+        path: '/search/:searchKey?',
         name: 'Home',
         component: Home
+    },
+    {
+        path: '/versions/:type',
+        name: 'Version',
+        component: Version
     }
 ]
 const router = createRouter({
