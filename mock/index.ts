@@ -63,7 +63,7 @@ const appList = [
 ];
 export default [
     {
-        "url": '/ranks',
+        "url": '/version/ranks',
         "method": 'get',
         "response": () => {
             return {

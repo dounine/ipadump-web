@@ -49,7 +49,7 @@
                     <span style="font-size: 14px">{{ rank.des }}</span>
                   </div>
                   <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{ rank.latestVersion }} / {{ rank.size }}</span>
+                    <span style="font-size: 14px;margin-right:10px;">{{ rank.version }} / {{ rank.size }}</span>
                     <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)" circle/>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ const chooseVersion = (rank) => {
 }
 const noSearch = () => {
   search.value = false
-  proxy.$axios.get('/ranks').then(response => {
+  proxy.$axios.get('/version/ranks').then(response => {
     ranks.value = response.data.data
   })
 }
@@ -113,7 +113,8 @@ onBeforeMount(() => {
       ranks.value = response.data.data
     })
   } else {
-    proxy.$axios.get('/ranks').then(response => {
+    proxy.$axios.get('/version/ranks').then(response => {
+      console.log(response.data)
       ranks.value = response.data.data
       searching.value = false
     })

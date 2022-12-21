@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
-        path: '/versions/:type',
+        path: '/versions/:appid',
         name: 'Version',
         component: Version
     }
