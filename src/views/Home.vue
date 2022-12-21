@@ -33,36 +33,31 @@
               </el-breadcrumb>
             </div>
           </template>
-          <div v-if="ranks.length>0" v-for="rank in ranks" :key="rank.appid" class="rank-row">
-            <el-row :gutter="20">
-              <el-col :span="6">
-                <div class="grid-content ep-bg-purple"/>
-                <div style="display: flex;flex-direction: row;">
-                  <div>
-                    <img style="width:30px;height:30px;margin-top:14px;" :src="rank.icon"/>
+          <div v-if="ranks.length>0" v-for="rank in ranks" :key="rank.appid" class="rank-row"
+               @click="chooseVersion(rank)">
+            <div style="display: flex;">
+              <div
+                  style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                <div>
+                  <img style="width:30px;height:30px;margin-top:14px;" :src="rank.icon"/>
+                </div>
+                <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
+              </div>
+              <div style="flex:1;">
+                <div style="display: flex">
+                  <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;">
+                    <span style="font-size: 14px">{{ rank.des }}</span>
                   </div>
-                  <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
+                  <div>
+                    <span style="font-size: 14px;margin-right:10px;">{{ rank.latestVersion }} / {{ rank.size }}</span>
+                    <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)" circle/>
+                  </div>
                 </div>
-              </el-col>
-              <el-col :span="6">
-                <div class="grid-content ep-bg-purple">
-                  <span style="font-size: 14px">{{ rank.des }}</span>
-                </div>
-              </el-col>
-              <el-col :span="10">
-                <div class="grid-content ep-bg-purple">
-                  <span style="font-size: 14px">{{ rank.latestVersion }} / {{ rank.size }}</span>
-                </div>
-              </el-col>
-              <el-col :span="2">
-                <div class="grid-content ep-bg-purple">
-                  <el-button type="primary" :icon="ArrowRightBold" @click="chooseVersion(rank)" circle/>
-                </div>
-              </el-col>
-            </el-row>
+              </div>
+            </div>
           </div>
           <div v-else>
-            <el-empty :image-size="100" description="没有数据" />
+            <el-empty :image-size="100" description="没有数据"/>
           </div>
         </el-card>
       </div>
@@ -143,6 +138,7 @@ onBeforeMount(() => {
   .rank-row:hover {
     cursor: pointer;
     opacity: 0.8;
+    color: #409eff;
     //background-color: #cccccc;
   }
 }

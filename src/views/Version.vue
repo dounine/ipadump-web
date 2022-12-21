@@ -15,36 +15,25 @@
             </div>
           </template>
           <div v-if="app.versions.length>0" v-for="version in app.versions" :key="version.name" class="rank-row">
-            <el-row :gutter="20">
-              <el-col :span="6">
-                <div class="grid-content ep-bg-purple"/>
-                <div style="display: flex;flex-direction: row;">
+            <div style="display: flex;">
+              <div style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                <div>
+                  <img style="width:30px;height:30px;margin-top:14px;" :src="app.info.icon"/>
+                </div>
+                <div style="margin-left:10px;font-weight: 500;">{{  app.info.name }}</div>
+              </div>
+              <div style="flex:1;">
+                <div style="display: flex">
+                  <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;">
+                    <span style="font-size: 14px">{{ version.des }}</span>
+                  </div>
                   <div>
-                    <img style="width:30px;height:30px;" :src="app.info.icon"/>
-                  </div>
-                  <div style="line-height: 30px;height: 30px;margin-left:10px;font-weight: 500;">{{
-                      app.info.name
-                    }}
+                    <span style="font-size: 14px;margin-right:10px;">{{ version.name }} / {{ version.size }}</span>
+                    <el-button type="primary" size="small" :icon="Download" circle/>
                   </div>
                 </div>
-              </el-col>
-              <el-col :span="6">
-                <div class="grid-content ep-bg-purple">
-                  <span style="font-size: 14px">{{ version.des }}</span>
-                </div>
-              </el-col>
-              <el-col :span="10">
-                <div class="grid-content ep-bg-purple">
-                  <span style="font-size: 14px">{{ version.name }} / {{ version.size }}</span>
-                </div>
-              </el-col>
-              <el-col :span="2">
-                <div class="grid-content ep-bg-purple">
-                  <el-button type="primary" :icon="Download" circle/>
-                </div>
-              </el-col>
-            </el-row>
-            <el-divider border-style="dashed"/>
+              </div>
+            </div>
           </div>
           <div v-else>
             <el-empty :image-size="100" description="没有数据"/>
@@ -93,6 +82,15 @@ onBeforeMount(() => {
   margin-top: 20px;
 
   .rank-row {
+    height: 60px;
+    line-height: 60px;
+    border-bottom: 1px dashed #cccccc;
+  }
+  .rank-row:hover {
+    cursor: pointer;
+    opacity: 0.8;
+    color: #409eff;
+    //background-color: #cccccc;
   }
 }
 </style>

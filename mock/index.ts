@@ -48,7 +48,7 @@ const appList = [
         appid: '1',
         bundleId: 'com.tecent.xin',
         size: '230 MB',
-        des: '社交软件',
+        des: '社交软件12341advbasdfasfd1243214123412341243',
         latestVersion: '8.0.31'
     }, {
 
