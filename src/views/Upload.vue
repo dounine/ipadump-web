@@ -10,6 +10,9 @@
           </template>
         </el-input>
       </el-form-item>
+      <el-form-item label="应用图标">
+        <img :src="data.icon" style="width:30px;height:30px;"/>
+      </el-form-item>
       <el-form-item label="应用名称">
         <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
                          v-model="data.name"/>
@@ -54,6 +57,24 @@
             <el-button class="ml-3" type="success" @click="submitUpload" style="margin-left:20px;">
               上传
             </el-button>
+            <el-select style="margin-left:20px;" v-model="data.icon" placeholder="使用此icon">
+              <el-option
+                  v-for="item in data.version.icons"
+                  :key="item.url"
+                  :label="item.name"
+                  :value="item.url"
+              >
+                <span style="float: left">{{ item.url }}</span>
+                <span
+                    style="
+          float: right;
+          color: var(--el-text-color-secondary);
+          font-size: 13px;
+        "
+                >{{ item.name }}</span
+                >
+              </el-option>
+            </el-select>
           </el-upload>
           <el-progress :percentage="hashPercentage" color="#f56c6c">
             hash
@@ -126,6 +147,7 @@ const data = reactive({
   appid: '',
   name: '',
   des: '',
+  icon: '',
   versions: [],
   vnames: [],
   version: {
@@ -136,7 +158,8 @@ const data = reactive({
     download: 0,
     size: 0,
     file: '',
-    time: ''
+    time: '',
+    icons: []
   }
 })
 const versionSelect = (version) => {
@@ -157,7 +180,8 @@ const versionSelect = (version) => {
       download: 0,
       size: 0,
       file: '',
-      time: ''
+      time: '',
+      icons: []
     }
   }
 }
@@ -183,6 +207,7 @@ const handleSelect = (item) => {
     const appInfo = response.data.data.info;
     const appVersions = response.data.data.versions;
     data.appid = appInfo.id
+    data.icon = appInfo.icon
     data.name = appInfo.name
     data.versions = appVersions
   })
