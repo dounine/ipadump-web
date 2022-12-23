@@ -4,7 +4,7 @@ const pow1024 = (size) => {
 
 export default {
     sizeFormat: (size) => {
-        if (!size) return ''
+        if (!size) return `${size} B`
         if (size < pow1024(1)) return size + ' B'
         if (size < pow1024(2)) return (size / pow1024(1)).toFixed(2) + ' KB'
         if (size < pow1024(3)) return (size / pow1024(2)).toFixed(2) + ' MB'

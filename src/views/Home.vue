@@ -5,24 +5,27 @@
     </el-header>
     <el-main>
       <div>
-        <el-input
+        <el-autocomplete
+            style="width:100%"
+            size="large"
             v-model="searchKey"
+            :fetch-suggestions="querySearchAsync"
+            @select="handleSelect"
             placeholder="请输入app名称"
             maxlength="20"
-            autofocus
             class="input-with-select"
         >
           <template #prepend>
-            <el-select v-model="position" placeholder="Select" style="width: 115px">
+            <el-select size="large" v-model="position" placeholder="Select" style="width: 115px">
               <el-option label="中国区" value="cn"/>
               <el-option label="香港区" disabled value="hk"/>
               <el-option label="美国区" disabled value="us"/>
             </el-select>
           </template>
           <template #append>
-            <el-button @click="searchFun" :disabled="!searchKey" :icon="Search"/>
+            <el-button size="large" @click="searchFun" :disabled="!searchKey" :icon="Search"/>
           </template>
-        </el-input>
+        </el-autocomplete>
       </div>
       <div class="rank-box" v-loading="searching">
         <el-card>
@@ -51,7 +54,9 @@
                     <span style="font-size: 14px">{{ rank.des }}</span>
                   </div>
                   <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{ rank.version }} / {{ Common.sizeFormat(rank.size) }}</span>
+                    <span style="font-size: 14px;margin-right:10px;">{{
+                        rank.version
+                      }} / {{ Common.sizeFormat(rank.size) }}</span>
                     <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)" circle/>
                   </div>
                 </div>
@@ -107,7 +112,23 @@ const searchFun = () => {
     ranks.value = response.data.data
   })
 }
-
+const handleSelect = (item) => {
+  searching.value = true
+  proxy.$axios.get(`/version/search?key=${item.value}`).then(response => {
+    searching.value = false
+    ranks.value = response.data.data
+  })
+}
+const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
+  proxy.$axios.get(`/app/keys?key=${queryString || ''}`).then(response => {
+    cb(response.data.data.map(item => {
+      return {
+        value: item.name,
+        link: item.name
+      }
+    }))
+  })
+}
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
   if (search.value) {
@@ -117,7 +138,6 @@ onBeforeMount(() => {
     })
   } else {
     proxy.$axios.get('/version/ranks').then(response => {
-      console.log(response.data)
       ranks.value = response.data.data
       searching.value = false
     })

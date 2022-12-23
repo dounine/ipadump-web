@@ -2,73 +2,84 @@
   <el-main>
     <el-form :model="data" label-width="70px">
       <el-form-item label="应用id">
-        <el-col :span="4">
-          <el-input v-model="data.appid"/>
-        </el-col>
-        <el-col :span="11">
-          <el-button :icon="Refresh">生成</el-button>
-        </el-col>
+        <el-input v-model="data.appid">
+          <template #append>
+            <el-button :icon="Refresh">
+              生成
+            </el-button>
+          </template>
+        </el-input>
       </el-form-item>
       <el-form-item label="应用名称">
-        <el-input v-model="data.name"/>
+        <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
+                         v-model="data.name"/>
       </el-form-item>
+      <el-form-item label="应用描述">
+        <el-input v-model="data.des" type="textarea"/>
+      </el-form-item>
+      <el-divider content-position="left">版本信息</el-divider>
       <el-form-item label="应用版本">
-        <el-col :span="4">
-          <el-select
-              v-model="data.version"
-              multiple
-              filterable
-              allow-create
-              default-first-option
-              :reserve-keyword="false"
-              placeholder="请选择或者输入版本"
-          >
-            <el-option
-                v-for="item in data.versions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-            />
-          </el-select>
-        </el-col>
-        <el-col :span="11">
-          <el-button :icon="Delete">数据库删除此版本</el-button>
-        </el-col>
+        <el-select
+            v-model="data.vnames"
+            filterable
+            multiple
+            @change="versionSelect"
+            allow-create
+            default-first-option
+            :reserve-keyword="false"
+            placeholder="请选择或者输入版本"
+        >
+          <el-option
+              v-for="item in data.versions"
+              :key="item.name"
+              :label="item.name"
+              :value="item.name"
+          />
+        </el-select>
+        <el-button :icon="Delete">数据库删除此版本</el-button>
       </el-form-item>
       <el-form-item label="ipa文件">
-        <el-upload
-            ref="upload"
-            class="upload-demo"
-            :limit="1"
-            :on-change="fileChange"
-            :before-remove="fileRemove"
-            :auto-upload="false"
-        >
-          <template #trigger>
-            <el-button type="primary">选择ipa</el-button>
-          </template>
-          <el-button class="ml-3" type="success" @click="submitUpload" style="margin-left:20px;">
-            上传
-          </el-button>
+        <div style="width:100%;">
+          <el-upload
+              ref="uploadRef"
+              class="upload-demo"
+              :limit="1"
+              :on-change="fileChange"
+              :before-remove="fileRemove"
+              :auto-upload="false"
+          >
+            <template #trigger>
+              <el-button type="primary">选择ipa</el-button>
+            </template>
+            <el-button class="ml-3" type="success" @click="submitUpload" style="margin-left:20px;">
+              上传
+            </el-button>
+          </el-upload>
           <el-progress :percentage="hashPercentage" color="#f56c6c">
             hash
           </el-progress>
-          <el-progress :percentage="percentage">
+          <el-progress style="width:100%;" :percentage="percentage">
             上传
           </el-progress>
-        </el-upload>
+        </div>
       </el-form-item>
       <el-form-item label="版本发布">
-        <el-switch v-model="data.delivery"/>
+        <el-switch v-model="data.version.push"/>
+      </el-form-item>
+      <el-form-item label="版本大小">
+        <span>{{ Common.sizeFormat(data.version.size) }}</span>
+      </el-form-item>
+      <el-form-item label="下载次数">
+        <span>{{ data.version.download }}</span>
+      </el-form-item>
+      <el-form-item label="文件地址">
+        <a :href="data.version.file">{{ data.version.file }}</a>
       </el-form-item>
       <el-form-item label="版本描述">
-        <el-input v-model="data.desc" type="textarea"/>
-      </el-form-item>
-      <el-form-item label="应用描述">
-        <el-input v-model="data.desc" type="textarea"/>
+        <el-input v-model="data.version.des" type="textarea"/>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit">Create</el-button>
+        <el-button type="primary" @click="onSubmit">Update</el-button>
         <el-button>Cancel</el-button>
       </el-form-item>
     </el-form>
@@ -78,8 +89,9 @@
 <script lang="ts" setup>
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import Common from '../util/common'
 import {getCurrentInstance, onBeforeMount, ref, watch, computed} from 'vue';
-import {genFileId} from 'element-plus'
+import {genFileId, ElMessageBox, ElMessage} from 'element-plus'
 import type {UploadInstance, UploadProps, UploadRawFile} from 'element-plus'
 
 const upload = ref<UploadInstance>()
@@ -99,6 +111,7 @@ const {proxy} = getCurrentInstance()
 let appid = proxy.$route.params["appid"]
 import {reactive} from 'vue'
 
+const uploadRef = ref(null)
 const percentage = ref(0)
 const hashPercentage = ref(0)
 const chunkData = ref([])
@@ -112,19 +125,81 @@ const container = reactive({
 const data = reactive({
   appid: '',
   name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
-  version: '',
-  versions: []
+  des: '',
+  versions: [],
+  vnames: [],
+  version: {
+    appid: 0,
+    name: '',
+    push: false,
+    des: '',
+    download: 0,
+    size: 0,
+    file: '',
+    time: ''
+  }
 })
-
+const versionSelect = (version) => {
+  let findVersion = data.versions.find(item => {
+    return item.name === version[0]
+  })
+  if (findVersion) {
+    data.version = {
+      ...findVersion,
+      push: findVersion.push === 1
+    }
+  } else {
+    data.version = {
+      appid: 0,
+      name: '',
+      push: false,
+      des: '',
+      download: 0,
+      size: 0,
+      file: '',
+      time: ''
+    }
+  }
+}
 const onSubmit = () => {
   console.log('submit!')
+  let pushData = {
+    ...data.version,
+    push: data.version.push ? 1 : 0
+  }
+  delete pushData['time']
+  proxy.$axios.post(`/version/addOrUpdate`, pushData).then(response => {
+    console.log('update', response.data)
+    if (response.data.code === 0) {
+      ElMessage({
+        message: '成功处理',
+        type: 'success',
+      })
+    }
+  })
+}
+const handleSelect = (item) => {
+  proxy.$axios.get(`/version/nameinfo?name=${item.value}`).then(response => {
+    const appInfo = response.data.data.info;
+    const appVersions = response.data.data.versions;
+    data.appid = appInfo.id
+    data.name = appInfo.name
+    data.versions = appVersions
+  })
+}
+const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
+  if (!queryString) {
+    cb([])
+    return
+  }
+  proxy.$axios.get(`/app/keys?key=${queryString || ''}`).then(response => {
+    cb(response.data.data.map(item => {
+      return {
+        value: item.name,
+        link: item.name
+      }
+    }))
+  })
 }
 const request = ({
                    url,
@@ -206,14 +281,28 @@ const grouped = (array, subGroupLength) => {
   }
   return newArray;
 }
-const fileChange = async (data) => {
-  container.file = data.raw
-  const fileChunkList = createFileChunk(data.raw)
+const fileChange = async (mdata) => {
+  container.file = mdata.raw
+  if (!/\d+.\d+.\d+/.exec(mdata.raw.name)) {
+    ElMessageBox.alert('上传的ipa必需带版本号', '错误', {
+      confirmButtonText: 'OK',
+      callback: (action) => {
+      },
+    })
+    return
+  }
+  const fileChunkList = createFileChunk(mdata.raw)
   container.hash = await createChunkListHash(fileChunkList)
-  const {shouldUpload, uploadedList} = await verifyFile(container.file.name, container.hash)
-  if (!shouldUpload) {
-    console.log('服务器已有上传文件，秒传成功')
+  const verifyData = await verifyFile(container.file.name, container.hash)
+  if (!verifyData.shouldUpload) {
+    console.log('服务器已有上传文件，秒传成功', verifyData)
     percentage.value = 100
+    data.version = {
+      ...data.version,
+      file: verifyData.file.url,
+      size: verifyData.file.size
+    }
+    console.log(data.version)
     return
   }
   const uploadChunks = fileChunkList.map(({file}, index) => ({
@@ -222,7 +311,7 @@ const fileChange = async (data) => {
     hash: `${container.hash}-${index}`,
     chunk: file,
     size: file.size,
-    percentage: uploadedList.includes(index) ? 100 : 0,
+    percentage: verifyData.uploadedList.includes(index) ? 100 : 0,
   }))
   chunkData.value = uploadChunks
 
@@ -235,7 +324,7 @@ const fileChange = async (data) => {
 
   //过滤已经上传的切片
   const requestList = uploadChunks
-      .filter(({hash}) => !uploadedList.includes(hash))
+      .filter(({hash}) => !verifyData.uploadedList.includes(hash))
       .map(({chunk, hash, index}) => {
         const formData = new FormData()
         // 切片文件
@@ -259,9 +348,13 @@ const fileChange = async (data) => {
 
   await Promise.all(requestList)
 
-  if (uploadedList.length + requestList.length === uploadChunks.length) {
+  if (verifyData.uploadedList.length + requestList.length === uploadChunks.length) {
     console.log('文件合并')
-    await mergeBigFile(container.file.name, container.hash, FILE_BATCH_SIZE)
+    mergeBigFile(container.file.name, container.hash, FILE_BATCH_SIZE)
+        .then(result => {
+          data.version.file = result.url
+          data.version.size = result.size
+        })
     // setTimeout(async () => {
     //   await deleteBigFile(container.file.name, container.hash)
     // }, 1000)
@@ -305,14 +398,13 @@ const deleteBigFile = (filename, fileHash) => {
   })
 }
 const verifyFile = (filename, fileHash) => {
-  return new Promise((resolve, reject) => {
-    proxy.$axios.post('/file/verify/bigfile', {
-      filename,
-      fileHash
-    }).then(response => {
-      resolve(response.data.data)
-    })
+  return proxy.$axios.post('/file/verify/bigfile', {
+    filename,
+    fileHash
   })
+      .then(result => {
+        return result.data.data
+      })
 }
 //生成文件切片
 const createFileChunk = (file, size = FILE_BATCH_SIZE) => {

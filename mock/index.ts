@@ -76,7 +76,6 @@ export default [
         "url": '/search',
         "method": 'get',
         "response": ({query: {key}}) => {
-            console.log(key)
             return {
                 "status": "ok",
                 "data": appList

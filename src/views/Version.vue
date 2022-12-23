@@ -8,7 +8,7 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <el-breadcrumb :separator-icon="ArrowRight">
+              <el-breadcrumb  :separator-icon="ArrowRight">
                 <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
                 <el-breadcrumb-item>{{ app.info.name }}历史版本</el-breadcrumb-item>
               </el-breadcrumb>
