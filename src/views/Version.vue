@@ -28,7 +28,7 @@
                     <span style="font-size: 14px">{{ version.des }}</span>
                   </div>
                   <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{ version.name }} / {{ version.size }}</span>
+                    <span style="font-size: 14px;margin-right:10px;">{{ version.name }} / {{ Common.sizeFormat(version.size) }}</span>
                     <el-button type="primary" size="small" :icon="Download" circle/>
                   </div>
                 </div>
@@ -50,6 +50,7 @@
 <script lang="ts" setup>
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import Common from '../util/common'
 import {getCurrentInstance, onBeforeMount, ref} from 'vue';
 import {
   Download,

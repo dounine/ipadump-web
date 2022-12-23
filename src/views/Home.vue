@@ -51,7 +51,7 @@
                     <span style="font-size: 14px">{{ rank.des }}</span>
                   </div>
                   <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{ rank.version }} / {{ rank.size }}</span>
+                    <span style="font-size: 14px;margin-right:10px;">{{ rank.version }} / {{ Common.sizeFormat(rank.size) }}</span>
                     <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)" circle/>
                   </div>
                 </div>
@@ -73,6 +73,7 @@
 <script lang="ts" setup>
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import Common from '../util/common'
 import {getCurrentInstance, onBeforeMount, ref} from 'vue';
 import {
   ArrowRightBold,
