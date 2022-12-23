@@ -8,6 +8,8 @@
         <el-input
             v-model="searchKey"
             placeholder="请输入app名称"
+            maxlength="20"
+            autofocus
             class="input-with-select"
         >
           <template #prepend>
@@ -99,7 +101,7 @@ const searchFun = () => {
   search.value = true
   proxy.$router.push(`/search/${searchKey.value}`)
   searching.value = true
-  proxy.$axios.get(`/search?key=${searchKey.value}`).then(response => {
+  proxy.$axios.get(`/version/search?key=${searchKey.value}`).then(response => {
     searching.value = false
     ranks.value = response.data.data
   })
@@ -108,7 +110,7 @@ const searchFun = () => {
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
   if (search.value) {
-    proxy.$axios.get(`/search?key=${searchKey.value}`).then(response => {
+    proxy.$axios.get(`/version/search?key=${searchKey.value}`).then(response => {
       searching.value = false
       ranks.value = response.data.data
     })
