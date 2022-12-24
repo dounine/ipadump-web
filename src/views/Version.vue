@@ -68,9 +68,7 @@ const {proxy} = getCurrentInstance()
 let appid = proxy.$route.params["appid"]
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
-  console.log(appid)
   proxy.$axios.get(`/version/infos/${appid}`).then(response => {
-    console.log(response.data)
     app.value = response.data.data
   })
 })

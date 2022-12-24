@@ -1,29 +1,20 @@
 <template>
   <el-main>
     <el-form :model="data" label-width="70px">
-      <el-form-item label="应用id">
-        <el-input v-model="data.appid">
-          <template #append>
-            <el-button :icon="Refresh">
-              生成
-            </el-button>
-          </template>
-        </el-input>
-      </el-form-item>
       <el-form-item label="应用图标">
-        <img :src="data.icon" style="width:30px;height:30px;"/>
+        <img :src="data.app.icon" style="width:30px;height:30px;"/>
       </el-form-item>
       <el-form-item label="应用名称">
         <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
-                         v-model="data.name"/>
+                         v-model="data.app.name"/>
       </el-form-item>
       <el-form-item label="应用描述">
-        <el-input v-model="data.des" type="textarea"/>
+        <el-input v-model="data.app.des" type="textarea"/>
       </el-form-item>
       <el-divider content-position="left">版本信息</el-divider>
       <el-form-item label="应用版本">
         <el-select
-            v-model="data.vnames"
+            v-model="data.app.vnames"
             filterable
             multiple
             @change="versionSelect"
@@ -33,7 +24,7 @@
             placeholder="请选择或者输入版本"
         >
           <el-option
-              v-for="item in data.versions"
+              v-for="item in data.app.versions"
               :key="item.name"
               :label="item.name"
               :value="item.name"
@@ -57,21 +48,25 @@
             <el-button class="ml-3" type="success" @click="submitUpload" style="margin-left:20px;">
               上传
             </el-button>
-            <el-select style="margin-left:20px;" v-model="data.icon" placeholder="使用此icon">
+
+            <el-button @click="loadIpaImages" :loading="loadIpaLoading"
+                       :disabled="!container.hash || !container.uploaded">加载ipa图片
+            </el-button>
+            <el-select v-model="data.app.icon" placeholder="使用此icon" :disabled="!container.hash">
               <el-option
                   v-for="item in data.version.icons"
-                  :key="item.url"
+                  :key="item.name"
                   :label="item.name"
                   :value="item.url"
               >
-                <span style="float: left">{{ item.url }}</span>
+                <span style="float: left">{{ item.name }}</span>
                 <span
                     style="
           float: right;
           color: var(--el-text-color-secondary);
           font-size: 13px;
         "
-                >{{ item.name }}</span
+                ><img style="width:30px;height:30px;" :src="item.url"/></span
                 >
               </el-option>
             </el-select>
@@ -80,7 +75,7 @@
             hash
           </el-progress>
           <el-progress style="width:100%;" :percentage="percentage">
-            上传
+            上传{{ percentage }}
           </el-progress>
         </div>
       </el-form-item>
@@ -133,10 +128,12 @@ let appid = proxy.$route.params["appid"]
 import {reactive} from 'vue'
 
 const uploadRef = ref(null)
+const loadIpaLoading = ref(false)
 const percentage = ref(0)
 const hashPercentage = ref(0)
 const chunkData = ref([])
 const container = reactive({
+  uploaded: false,
   file: null,
   hash: '',
   worker: null,
@@ -144,14 +141,16 @@ const container = reactive({
 })
 
 const data = reactive({
-  appid: '',
-  name: '',
-  des: '',
-  icon: '',
-  versions: [],
-  vnames: [],
+  app: {
+    appid: '',
+    name: '',
+    des: '',
+    icon: '',
+    versions: [],
+    vnames: [],
+  },
   version: {
-    appid: 0,
+    appid: '',
     name: '',
     push: false,
     des: '',
@@ -163,7 +162,7 @@ const data = reactive({
   }
 })
 const versionSelect = (version) => {
-  let findVersion = data.versions.find(item => {
+  let findVersion = data.app.versions.find(item => {
     return item.name === version[0]
   })
   if (findVersion) {
@@ -173,7 +172,7 @@ const versionSelect = (version) => {
     }
   } else {
     data.version = {
-      appid: 0,
+      appid: '',
       name: '',
       push: false,
       des: '',
@@ -185,15 +184,27 @@ const versionSelect = (version) => {
     }
   }
 }
+const loadIpaImages = () => {
+  loadIpaLoading.value = true
+  if (container.hash) {
+    proxy.$axios.get(`/file/ipa/images?fileId=${container.hash}`).then(response => {
+      data.version.icons = response.data.data
+      loadIpaLoading.value = false
+    })
+  }
+}
 const onSubmit = () => {
-  console.log('submit!')
-  let pushData = {
+  let versionData = {
     ...data.version,
+    name: data.app.vnames[0] || '',
+    appid: data.app.name,
     push: data.version.push ? 1 : 0
   }
-  delete pushData['time']
-  proxy.$axios.post(`/version/addOrUpdate`, pushData).then(response => {
-    console.log('update', response.data)
+  delete versionData['time']
+  proxy.$axios.post(`/version/addOrUpdate`, {
+    app: data.app,
+    version: versionData
+  }).then(response => {
     if (response.data.code === 0) {
       ElMessage({
         message: '成功处理',
@@ -203,13 +214,13 @@ const onSubmit = () => {
   })
 }
 const handleSelect = (item) => {
+  proxy.$router.push(`/upload/${item.value}`)
   proxy.$axios.get(`/version/nameinfo?name=${item.value}`).then(response => {
     const appInfo = response.data.data.info;
     const appVersions = response.data.data.versions;
-    data.appid = appInfo.id
-    data.icon = appInfo.icon
-    data.name = appInfo.name
-    data.versions = appVersions
+    data.app.icon = appInfo.icon
+    data.app.name = appInfo.name
+    data.app.versions = appVersions
   })
 }
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
@@ -217,7 +228,7 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
     cb([])
     return
   }
-  proxy.$axios.get(`/app/keys?key=${queryString || ''}`).then(response => {
+  proxy.$axios.get(`/app/keys?key=${queryString || appid}`).then(response => {
     cb(response.data.data.map(item => {
       return {
         value: item.name,
@@ -266,6 +277,7 @@ const request = ({
 const fileRemove = async (data) => {
   if (container.file.name) {
     await deleteBigFile(container.file.name, container.hash)
+    container.uploaded = false
   }
   container.file = null;
   container.hash = '';
@@ -327,7 +339,7 @@ const fileChange = async (mdata) => {
       file: verifyData.file.url,
       size: verifyData.file.size
     }
-    console.log(data.version)
+    container.uploaded = true
     return
   }
   const uploadChunks = fileChunkList.map(({file}, index) => ({
@@ -345,7 +357,7 @@ const fileChange = async (mdata) => {
     if (percentage.value >= 100) {
       clearInterval(container.interval)
     }
-  }, 1000)
+  }, 200)
 
   //过滤已经上传的切片
   const requestList = uploadChunks
@@ -377,6 +389,7 @@ const fileChange = async (mdata) => {
     console.log('文件合并')
     mergeBigFile(container.file.name, container.hash, FILE_BATCH_SIZE)
         .then(result => {
+          container.uploaded = true
           data.version.file = result.url
           data.version.size = result.size
         })
@@ -445,6 +458,21 @@ const createFileChunk = (file, size = FILE_BATCH_SIZE) => {
 }
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
+  if (appid) {
+    proxy.$axios.get(`/app/keys?key=${appid}`).then(response => {
+      if (response.data.data.length > 0) {
+        let name = response.data.data[0].name
+        proxy.$axios.get(`/version/nameinfo?name=${name}`).then(response => {
+          const appInfo = response.data.data.info;
+          const appVersions = response.data.data.versions;
+          data.app.icon = appInfo.icon
+          data.app.name = appInfo.name
+          data.app.versions = appVersions
+          console.log(appVersions)
+        })
+      }
+    })
+  }
 })
 </script>
 

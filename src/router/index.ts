@@ -18,11 +18,10 @@ const routes: RouteRecordRaw[] = [
         component: Home
     },
     {
-        path: '/upload',
+        path: '/upload/:appid?',
         name: 'Upload',
         component: Upload
     },
-
     {
         path: '/versions/:appid',
         name: 'Version',
