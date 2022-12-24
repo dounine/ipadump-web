@@ -30,7 +30,8 @@
               :value="item.name"
           />
         </el-select>
-        <el-button :icon="Delete">数据库删除此版本</el-button>
+        <el-button @click="deleteVersion" :disabled="!data.app.vnames[0] || !data.app.name" :icon="Delete">删除
+        </el-button>
       </el-form-item>
       <el-form-item label="ipa文件">
         <div style="width:100%;">
@@ -49,27 +50,6 @@
               上传
             </el-button>
 
-            <el-button @click="loadIpaImages" :loading="loadIpaLoading"
-                       :disabled="!container.hash || !container.uploaded">加载ipa图片
-            </el-button>
-            <el-select v-model="data.app.icon" placeholder="使用此icon" :disabled="!container.hash">
-              <el-option
-                  v-for="item in data.version.icons"
-                  :key="item.name"
-                  :label="item.name"
-                  :value="item.url"
-              >
-                <span style="float: left">{{ item.name }}</span>
-                <span
-                    style="
-          float: right;
-          color: var(--el-text-color-secondary);
-          font-size: 13px;
-        "
-                ><img style="width:30px;height:30px;" :src="item.url"/></span
-                >
-              </el-option>
-            </el-select>
           </el-upload>
           <el-progress :percentage="hashPercentage" color="#f56c6c">
             hash
@@ -81,6 +61,31 @@
       </el-form-item>
       <el-form-item label="版本发布">
         <el-switch v-model="data.version.push"/>
+      </el-form-item>
+      <el-form-item label="是否解压">
+        <el-switch :loading="unzipLoading" @change="switchUnzip" v-model="data.version.unzip"/>
+        <el-button style="margin-left:20px;" v-if="data.version.unzip && !unzipLoading" @click="loadIpaImages" :loading="loadIpaLoading">
+          加载ipa图片
+        </el-button>
+        <el-select v-model="data.app.icon" placeholder="使用icon" v-if="data.version.unzip && !unzipLoading">
+          <el-option
+              v-for="item in data.version.icons"
+              :key="item.name"
+              :label="item.name"
+              :value="item.url"
+          >
+            <span style="float: left">{{ item.name }}</span>
+            <span
+                style="
+          float: right;
+          color: var(--el-text-color-secondary);
+          font-size: 13px;
+        "
+            ><img style="width:30px;height:30px;" :src="item.url"/></span
+            >
+          </el-option>
+        </el-select>
+
       </el-form-item>
       <el-form-item label="版本大小">
         <span>{{ Common.sizeFormat(data.version.size) }}</span>
@@ -128,6 +133,7 @@ let appid = proxy.$route.params["appid"]
 import {reactive} from 'vue'
 
 const uploadRef = ref(null)
+const unzipLoading = ref(false)
 const loadIpaLoading = ref(false)
 const percentage = ref(0)
 const hashPercentage = ref(0)
@@ -142,7 +148,6 @@ const container = reactive({
 
 const data = reactive({
   app: {
-    appid: '',
     name: '',
     des: '',
     icon: '',
@@ -158,6 +163,7 @@ const data = reactive({
     size: 0,
     file: '',
     time: '',
+    unzip: false,
     icons: []
   }
 })
@@ -184,12 +190,52 @@ const versionSelect = (version) => {
     }
   }
 }
+const parseQueryString = url => {
+  let json = {}
+  let arr = url.substring(url.indexOf('?') + 1).split('&')
+  arr.forEach(item => {
+    let tmp = item.split('=')
+    json[tmp[0]] = tmp[1]
+  })
+  return json
+}
 const loadIpaImages = () => {
   loadIpaLoading.value = true
-  if (container.hash) {
-    proxy.$axios.get(`/file/ipa/images?fileId=${container.hash}`).then(response => {
+  let fileJson = parseQueryString(data.version.file)
+  if (fileJson.fileId) {
+    proxy.$axios.get(`/file/ipa/images?fileId=${fileJson.fileId}`).then(response => {
       data.version.icons = response.data.data
       loadIpaLoading.value = false
+    })
+  } else {
+    ElMessage({
+      message: '文件地址找不到fileId，无法加载ipa图片',
+      type: 'error',
+    })
+  }
+}
+const switchUnzip = (e) => {
+  unzipLoading.value = true
+  let fileJson = parseQueryString(data.version.file)
+  if (fileJson.fileId) {
+    proxy.$axios.post(`/file/ipa/unzip`, {
+      value: e,
+      fileId: fileJson.fileId
+    }).then(response => {
+      let type = '解压'
+      if (!e) {
+        type = '删除解压包'
+      }
+      ElMessage({
+        message: response.data.code === 0 ? `${type}成功` : `${type}失败`,
+        type: response.data.code === 0 ? 'success' : 'warning',
+      })
+      unzipLoading.value = false
+    })
+  } else {
+    ElMessage({
+      message: '文件地址不包含fileId，不支持解压',
+      type: 'error',
     })
   }
 }
@@ -212,6 +258,29 @@ const onSubmit = () => {
       })
     }
   })
+}
+const deleteVersion = () => {
+  if (data.app.vnames[0] && data.app.name) {
+    ElMessageBox.alert(`是否要删除${data.app.vnames[0]}版本`, '提示', {
+      confirmButtonText: '确定',
+      callback: (action) => {
+        if (action === 'confirm') {
+          proxy.$axios.post(`/version/delete`, {
+            appid: data.app.name,
+            name: data.app.vnames[0]
+          }).then(response => {
+            ElMessage({
+              message: '成功处理',
+              type: 'success',
+            })
+            setTimeout(() => {
+              location.reload()
+            }, 1000)
+          })
+        }
+      },
+    })
+  }
 }
 const handleSelect = (item) => {
   proxy.$router.push(`/upload/${item.value}`)
@@ -310,14 +379,14 @@ const createProgressHandler = (index, item) => {
     }
   }
 }
-const grouped = (array, subGroupLength) => {
-  let index = 0;
-  let newArray = [];
-  while (index < array.length) {
-    newArray.push(array.slice(index, index += subGroupLength));
-  }
-  return newArray;
-}
+// const grouped = (array, subGroupLength) => {
+//   let index = 0;
+//   let newArray = [];
+//   while (index < array.length) {
+//     newArray.push(array.slice(index, index += subGroupLength));
+//   }
+//   return newArray;
+// }
 const fileChange = async (mdata) => {
   container.file = mdata.raw
   if (!/\d+.\d+.\d+/.exec(mdata.raw.name)) {
@@ -468,7 +537,6 @@ onBeforeMount(() => {
           data.app.icon = appInfo.icon
           data.app.name = appInfo.name
           data.app.versions = appVersions
-          console.log(appVersions)
         })
       }
     })
