@@ -29,7 +29,7 @@
                   </div>
                   <div>
                     <span style="font-size: 14px;margin-right:10px;">{{ version.name }} / {{ Common.sizeFormat(version.size) }}</span>
-                    <el-button type="primary" size="small" :icon="Download" circle/>
+                    <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
                   </div>
                 </div>
               </div>
@@ -66,6 +66,9 @@ const app = ref({
 const version = ref([])
 const {proxy} = getCurrentInstance()
 let appid = proxy.$route.params["appid"]
+const downloadFun = (version)=>{
+  window.location.href = version.file
+}
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
   proxy.$axios.get(`/version/infos/${appid}`).then(response => {
@@ -88,7 +91,7 @@ onBeforeMount(() => {
     border-bottom: 1px dashed #cccccc;
   }
   .rank-row:hover {
-    cursor: pointer;
+    //cursor: pointer;
     opacity: 0.8;
     color: #409eff;
     //background-color: #cccccc;
