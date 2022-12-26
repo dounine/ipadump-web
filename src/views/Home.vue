@@ -107,15 +107,16 @@
           </el-tab-pane>
           <el-tab-pane label="在线砸壳" name="dump">
             <el-card>
-              <el-form :model="dump" label-width="120px">
-                <el-form-item label="应用名称">
+              <el-form status-icon ref="ruleFormRef" :model="dump" :rules="dumpRules" label-width="120px">
+                <el-form-item label="应用名称" prop="appid">
                   <el-input v-model="dump.appid" maxlength="20" placeholder="请输入应用名称"/>
                 </el-form-item>
-                <el-form-item label="版本号">
-                  <el-input v-model="dump.version" maxlength="20" placeholder="默认最新版本"/>
+                <el-form-item label="版本号" prop="version">
+                  <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号"/>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" :disabled="!dump.appid||!dump.version" @click="dumpSubmit">申请在线砸壳
+                  <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
+                    申请在线砸壳
                   </el-button>
                 </el-form-item>
               </el-form>
@@ -123,7 +124,7 @@
             <el-card style="margin-top:20px;">
               <template #header>
                 <div class="card-header">
-                  <span>在线砸壳列表</span>
+                  <span>当前砸壳应用</span>
                 </div>
               </template>
               <div v-for="du in dumpList" :key="du.appid" class="rank-row">
@@ -150,26 +151,51 @@
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
 import Common from '../util/common'
-import {getCurrentInstance, onBeforeMount, ref, reactive} from 'vue';
+import {getCurrentInstance, onBeforeMount, ref, reactive, nextTick} from 'vue';
 import {
   ArrowRightBold,
   Search,
   ArrowRight
 } from '@element-plus/icons-vue'
+import {ElMessage} from "element-plus";
 
 const search = ref(false)
 const searchKey = ref('')
 const position = ref('cn')
 const rankLoading = ref(true)
 const searchLoading = ref(false)
+const ruleFormRef = ref()
 const dump = reactive({
   version: '',
   appid: '',
+})
+const dumpRules = reactive({
+  appid: [{
+    required: true, message: '请输入应用名称'
+  }, {
+    min: 2, max: 20, message: '长度在2~20之间', trigger: 'blur'
+  }],
+  version: [
+    {
+      required: true, message: '请输入版本号'
+    },
+    {
+      validator: (rule, value, callback) => {
+        if (!/\d+.\d+.\d+/.exec(value)) {
+          callback(new Error('请输入正确的版本号'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'change'
+    }
+  ]
 })
 const dumpList = ref([])
 const ranks = ref([])
 const searchs = ref([])
 const {proxy} = getCurrentInstance()
+const that = getCurrentInstance()
 searchKey.value = proxy.$route.params["searchKey"] || ''
 search.value = searchKey.value !== ''
 const activeName = ref(searchKey.value ? 'search' : 'download')
@@ -239,21 +265,28 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
     }))
   })
 }
-const dumpSubmit = () => {
-  if (dump.appid && dump.version) {
-    proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
-      proxy.$axios.get('/dump/infos').then(response => {
-        dumpList.value = response.data.data
-        dump.value = {
-          appid: '',
-          version: ''
-        }
+const dumpSubmit = (form) => {
+  that.refs.ruleFormRef.validate((valid, fields) => {
+    if (valid) {
+      proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
+        proxy.$axios.get('/dump/infos').then(response => {
+          ElMessage({
+            message: '申请成功、请等待砸壳',
+            type: 'success',
+          })
+          dumpList.value = response.data.data
+          dump.value = {
+            appid: '',
+            version: ''
+          }
+        })
       })
-    })
-  }
+    }
+  })
 }
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
+
   if (search.value) {
     proxy.$axios.get(`/version/search?key=${searchKey.value}`).then(response => {
       rankLoading.value = false
@@ -263,6 +296,7 @@ onBeforeMount(() => {
   } else {
     proxy.$axios.get('/version/ranks').then(response => {
       ranks.value = response.data.data
+      console.log(ranks.value)
       rankLoading.value = false
     })
   }
