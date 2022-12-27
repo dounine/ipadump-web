@@ -8,7 +8,7 @@
         <el-card>
           <template #header>
             <div class="card-header">
-              <el-breadcrumb  :separator-icon="ArrowRight">
+              <el-breadcrumb :separator-icon="ArrowRight">
                 <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
                 <el-breadcrumb-item>{{ app.info.name }}历史版本</el-breadcrumb-item>
               </el-breadcrumb>
@@ -16,11 +16,12 @@
           </template>
           <div v-if="app.versions.length>0" v-for="version in app.versions" :key="version.name" class="rank-row">
             <div style="display: flex;">
-              <div style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+              <div
+                  style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
                 <div>
                   <img style="width:30px;height:30px;margin-top:14px;" :src="app.info.icon"/>
                 </div>
-                <div style="margin-left:10px;font-weight: 500;">{{  app.info.name }}</div>
+                <div style="margin-left:10px;font-weight: 500;">{{ app.info.name }}</div>
               </div>
               <div style="flex:1;">
                 <div style="display: flex">
@@ -28,7 +29,9 @@
                     <span style="font-size: 14px">{{ version.des }}</span>
                   </div>
                   <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{ version.name }} / {{ Common.sizeFormat(version.size) }}</span>
+                    <span style="font-size: 14px;margin-right:10px;">{{
+                        version.name
+                      }} / {{ Common.sizeFormat(version.size) }}</span>
                     <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
                   </div>
                 </div>
@@ -63,10 +66,11 @@ const app = ref({
   },
   versions: []
 })
+const hh = ref('')
 const version = ref([])
 const {proxy} = getCurrentInstance()
 let appid = proxy.$route.params["appid"]
-const downloadFun = (version)=>{
+const downloadFun = (version) => {
   window.location.href = version.file
 }
 onBeforeMount(() => {
@@ -90,6 +94,7 @@ onBeforeMount(() => {
     line-height: 60px;
     border-bottom: 1px dashed #cccccc;
   }
+
   .rank-row:hover {
     //cursor: pointer;
     opacity: 0.8;

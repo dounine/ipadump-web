@@ -64,7 +64,8 @@
       </el-form-item>
       <el-form-item label="是否解压">
         <el-switch :loading="unzipLoading" @change="switchUnzip" v-model="data.version.unzip"/>
-        <el-button style="margin-left:20px;" v-if="data.version.unzip && !unzipLoading" @click="loadIpaImages" :loading="loadIpaLoading">
+        <el-button style="margin-left:20px;" v-if="data.version.unzip && !unzipLoading" @click="loadIpaImages"
+                   :loading="loadIpaLoading">
           加载ipa图片
         </el-button>
         <el-select v-model="data.app.icon" placeholder="使用icon" v-if="data.version.unzip && !unzipLoading">
@@ -461,6 +462,10 @@ const fileChange = async (mdata) => {
           container.uploaded = true
           data.version.file = result.url
           data.version.size = result.size
+          ElMessage({
+            message: '上传成功',
+            type: 'success',
+          })
         })
     // setTimeout(async () => {
     //   await deleteBigFile(container.file.name, container.hash)

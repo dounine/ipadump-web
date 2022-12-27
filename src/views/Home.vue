@@ -284,9 +284,24 @@ const dumpSubmit = (form) => {
     }
   })
 }
+const getBase64 = (url, callback) => {
+  let Img = new Image(),
+      dataURL = '';
+  Img.src = url
+  Img.setAttribute('crossOrigin', 'Anonymous');
+  Img.onload = function () {
+    var canvas = document.createElement('canvas'),
+        width = Img.width,
+        height = Img.height;
+    canvas.width = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(Img, 0, 0, width, height);
+    dataURL = canvas.toDataURL('image/jpeg');
+    return callback ? callback(dataURL) : null;
+  };
+}
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
-
   if (search.value) {
     proxy.$axios.get(`/version/search?key=${searchKey.value}`).then(response => {
       rankLoading.value = false
@@ -296,7 +311,6 @@ onBeforeMount(() => {
   } else {
     proxy.$axios.get('/version/ranks').then(response => {
       ranks.value = response.data.data
-      console.log(ranks.value)
       rankLoading.value = false
     })
   }
