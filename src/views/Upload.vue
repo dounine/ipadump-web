@@ -1,20 +1,20 @@
 <template>
   <el-main>
-    <el-form :model="data" label-width="70px">
+    <el-form status-icon ref="ruleFormRef" :model="formData" :rules="rules" label-width="80px">
       <el-form-item label="应用图标">
-        <img :src="data.app.icon" style="width:30px;height:30px;"/>
+        <img :src="formData.appIcon" style="width:30px;height:30px;"/>
       </el-form-item>
-      <el-form-item label="应用名称">
+      <el-form-item label="应用名称" prop="appName">
         <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
-                         v-model="data.app.name"/>
+                         v-model="formData.appName"/>
       </el-form-item>
-      <el-form-item label="应用描述">
-        <el-input v-model="data.app.des" type="textarea"/>
+      <el-form-item label="应用描述" prop="appDes">
+        <el-input v-model="formData.appDes" type="textarea"/>
       </el-form-item>
       <el-divider content-position="left">版本信息</el-divider>
-      <el-form-item label="应用版本">
+      <el-form-item label="应用版本" prop="appVnames">
         <el-select
-            v-model="data.app.vnames"
+            v-model="formData.appVnames"
             filterable
             multiple
             @change="versionSelect"
@@ -24,13 +24,13 @@
             placeholder="请选择或者输入版本"
         >
           <el-option
-              v-for="item in data.app.versions"
+              v-for="item in formData.appVersions"
               :key="item.name"
               :label="item.name"
               :value="item.name"
           />
         </el-select>
-        <el-button @click="deleteVersion" :disabled="!data.app.vnames[0] || !data.app.name" :icon="Delete">删除
+        <el-button @click="deleteVersion" :disabled="!formData.appVnames[0] || !formData.appName" :icon="Delete">删除
         </el-button>
       </el-form-item>
       <el-form-item label="ipa文件">
@@ -44,9 +44,10 @@
               :auto-upload="false"
           >
             <template #trigger>
-              <el-button type="primary">选择ipa</el-button>
+              <el-button type="primary" :disabled="!formData.appVnames[0]">选择ipa</el-button>
             </template>
-            <el-button class="ml-3" type="success" @click="submitUpload" style="margin-left:20px;">
+            <el-button class="ml-3" :disabled="!formData.appVnames[0]" type="success" @click="submitUpload"
+                       style="margin-left:20px;">
               上传
             </el-button>
 
@@ -60,17 +61,17 @@
         </div>
       </el-form-item>
       <el-form-item label="版本发布">
-        <el-switch v-model="data.version.push"/>
+        <el-switch v-model="formData.versionPush"/>
       </el-form-item>
       <el-form-item label="是否解压">
-        <el-switch :loading="unzipLoading" @change="switchUnzip" v-model="data.version.unzip"/>
-        <el-button style="margin-left:20px;" v-if="data.version.unzip && !unzipLoading" @click="loadIpaImages"
+        <el-switch :loading="unzipLoading" @change="switchUnzip" v-model="formData.versionUnzip"/>
+        <el-button style="margin-left:20px;" v-if="formData.versionUnzip && !unzipLoading" @click="loadIpaImages"
                    :loading="loadIpaLoading">
           加载ipa图片
         </el-button>
-        <el-select v-model="data.app.icon" placeholder="使用icon" v-if="data.version.unzip && !unzipLoading">
+        <el-select v-model="formData.appIcon" placeholder="使用icon" v-if="formData.versionUnzip && !unzipLoading">
           <el-option
-              v-for="item in data.version.icons"
+              v-for="item in formData.versionIcons"
               :key="item.name"
               :label="item.name"
               :value="item.url"
@@ -89,20 +90,20 @@
 
       </el-form-item>
       <el-form-item label="版本大小">
-        <span>{{ Common.sizeFormat(data.version.size) }}</span>
+        <span>{{ Common.sizeFormat(formData.versionSize) }}</span>
       </el-form-item>
       <el-form-item label="下载次数">
-        <span>{{ data.version.download }}</span>
+        <span>{{ formData.versionDownload }}</span>
       </el-form-item>
       <el-form-item label="文件地址">
-        <a :href="data.version.file">{{ data.version.file }}</a>
+        <a :href="formData.versionFile">{{ formData.versionFile }}</a>
       </el-form-item>
-      <el-form-item label="版本描述">
-        <el-input v-model="data.version.des" type="textarea"/>
+      <el-form-item label="版本描述" prop="versionDes">
+        <el-input v-model="formData.versionDes" type="textarea"/>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit">Update</el-button>
-        <el-button>Cancel</el-button>
+        <el-button type="primary" @click="onSubmit(ruleFormRef)">提交</el-button>
+        <el-button>取消</el-button>
       </el-form-item>
     </el-form>
   </el-main>
@@ -146,7 +147,62 @@ const container = reactive({
   worker: null,
   interval: null
 })
-
+const ruleFormRef = ref()
+const rules = reactive({
+  appName: [{
+    required: true,
+    message: '请输入应用名称'
+  }],
+  appDes: [{
+    required: true,
+    message: '请输入应用描述'
+  }],
+  appVnames: [{
+    validator: (rule, value, callback) => {
+      if (formData.appVnames[0] !== '' && formData.appVnames[0]) {
+        if (!/\d+.\d+.\d+/.exec(value)) {
+          callback(new Error('请输入正确的版本号'))
+        } else {
+          callback()
+        }
+      } else {
+        callback()
+      }
+    },
+    trigger: 'change'
+  }],
+  versionDes: [{
+    validator: (rule, value, callback) => {
+      if (formData.appVnames[0] !== '' && formData.appVnames[0]) {
+        if (!value) {
+          callback(new Error('请输入版本描述'))
+        } else {
+          callback()
+        }
+      } else {
+        callback()
+      }
+    },
+    trigger: 'change'
+  }]
+})
+const formData = reactive({
+  appName: '',
+  appDes: '',
+  appIcon: '',
+  appVersions: [],
+  appVnames: [],
+  versionAppid: '',
+  versionName: '',
+  versionPush: false,
+  versionDes: '',
+  versionDownload: 0,
+  versionSize: 0,
+  versionFile: '',
+  versionTime: '',
+  versionUnzip: false,
+  versionIcons: []
+})
 const data = reactive({
   app: {
     name: '',
@@ -169,26 +225,29 @@ const data = reactive({
   }
 })
 const versionSelect = (version) => {
-  let findVersion = data.app.versions.find(item => {
+  let findVersion = formData.appVersions.find(item => {
     return item.name === version[0]
   })
   if (findVersion) {
-    data.version = {
-      ...findVersion,
-      push: findVersion.push === 1
-    }
+    formData.versionAppid = findVersion.appid
+    formData.versionName = findVersion.name
+    formData.versionPush = findVersion.push === 1
+    formData.versionDes = findVersion.des
+    formData.versionDownload = findVersion.download
+    formData.versionSize = findVersion.size
+    formData.versionFile = findVersion.file
+    formData.versionTime = findVersion.time
+    formData.versionIcons = findVersion.icons
   } else {
-    data.version = {
-      appid: '',
-      name: '',
-      push: false,
-      des: '',
-      download: 0,
-      size: 0,
-      file: '',
-      time: '',
-      icons: []
-    }
+    formData.versionAppid = ''
+    formData.versionName = ''
+    formData.versionPush = false
+    formData.versionDes = ''
+    formData.versionDownload = ''
+    formData.versionSize = ''
+    formData.versionFile = ''
+    formData.versionTime = ''
+    formData.versionIcons = ''
   }
 }
 const parseQueryString = url => {
@@ -205,7 +264,7 @@ const loadIpaImages = () => {
   let fileJson = parseQueryString(data.version.file)
   if (fileJson.fileId) {
     proxy.$axios.get(`/file/ipa/images?fileId=${fileJson.fileId}`).then(response => {
-      data.version.icons = response.data.data
+      formData.versionIcons = response.data.data
       loadIpaLoading.value = false
     })
   } else {
@@ -217,7 +276,7 @@ const loadIpaImages = () => {
 }
 const switchUnzip = (e) => {
   unzipLoading.value = true
-  let fileJson = parseQueryString(data.version.file)
+  let fileJson = parseQueryString(formData.versionFile)
   if (fileJson.fileId) {
     proxy.$axios.post(`/file/ipa/unzip`, {
       value: e,
@@ -240,35 +299,49 @@ const switchUnzip = (e) => {
     })
   }
 }
-const onSubmit = () => {
-  let versionData = {
-    ...data.version,
-    name: data.app.vnames[0] || '',
-    appid: data.app.name,
-    push: data.version.push ? 1 : 0
-  }
-  delete versionData['time']
-  proxy.$axios.post(`/version/addOrUpdate`, {
-    app: data.app,
-    version: versionData
-  }).then(response => {
-    if (response.data.code === 0) {
+const onSubmit = (form) => {
+  form.validate((valid, fields) => {
+    if (valid) {
+      proxy.$axios.post(`/version/addOrUpdate`, {
+        app: {
+          name: formData.appName,
+          des: formData.appDes,
+          icon: formData.appIcon,
+        },
+        version: {
+          appid: formData.appName,
+          name: formData.appVnames[0] || '',
+          push: formData.versionPush ? 1 : 0,
+          des: formData.versionDes,
+          download: formData.versionDownload,
+          size: formData.versionSize,
+          file: formData.versionFile
+        }
+      }).then(response => {
+        if (response.data.code === 0) {
+          ElMessage({
+            message: '成功处理',
+            type: 'success',
+          })
+        }
+      })
+    } else {
       ElMessage({
-        message: '成功处理',
-        type: 'success',
+        message: '请检查参数',
+        type: 'warning',
       })
     }
   })
 }
 const deleteVersion = () => {
-  if (data.app.vnames[0] && data.app.name) {
-    ElMessageBox.alert(`是否要删除${data.app.vnames[0]}版本`, '提示', {
+  if (formData.appVnames[0] && formData.appName) {
+    ElMessageBox.alert(`是否要删除${formData.appVnames[0]}版本`, '提示', {
       confirmButtonText: '确定',
       callback: (action) => {
         if (action === 'confirm') {
           proxy.$axios.post(`/version/delete`, {
-            appid: data.app.name,
-            name: data.app.vnames[0]
+            appid: formData.appName,
+            name: formData.appVnames[0]
           }).then(response => {
             ElMessage({
               message: '成功处理',
@@ -288,9 +361,9 @@ const handleSelect = (item) => {
   proxy.$axios.get(`/version/nameinfo?name=${item.value}`).then(response => {
     const appInfo = response.data.data.info;
     const appVersions = response.data.data.versions;
-    data.app.icon = appInfo.icon
-    data.app.name = appInfo.name
-    data.app.versions = appVersions
+    formData.appIcon = appInfo.icon
+    formData.appName = appInfo.name
+    formData.appVersions = appVersions
   })
 }
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
@@ -346,7 +419,7 @@ const request = ({
 }
 const fileRemove = async (data) => {
   if (container.file.name) {
-    await deleteBigFile(container.file.name, container.hash)
+    await deleteBigFile(container.hash)
     container.uploaded = false
   }
   container.file = null;
@@ -390,17 +463,17 @@ const createProgressHandler = (index, item) => {
 // }
 const fileChange = async (mdata) => {
   container.file = mdata.raw
-  if (!/\d+.\d+.\d+/.exec(mdata.raw.name)) {
-    ElMessageBox.alert('上传的ipa必需带版本号', '错误', {
-      confirmButtonText: 'OK',
-      callback: (action) => {
-      },
-    })
-    return
-  }
+  // if (!/\d+.\d+.\d+/.exec(mdata.raw.name)) {
+  //   ElMessageBox.alert('上传的ipa必需带版本号', '错误', {
+  //     confirmButtonText: 'OK',
+  //     callback: (action) => {
+  //     },
+  //   })
+  //   return
+  // }
   const fileChunkList = createFileChunk(mdata.raw)
   container.hash = await createChunkListHash(fileChunkList)
-  const verifyData = await verifyFile(container.file.name, container.hash)
+  const verifyData = await verifyFile(`${formData.appName}_${formData.appVnames[0]}`, container.hash)
   if (!verifyData.shouldUpload) {
     console.log('服务器已有上传文件，秒传成功', verifyData)
     percentage.value = 100
@@ -433,21 +506,21 @@ const fileChange = async (mdata) => {
   const requestList = uploadChunks
       .filter(({hash}) => !verifyData.uploadedList.includes(hash))
       .map(({chunk, hash, index}) => {
-        const formData = new FormData()
+        const fd = new FormData()
         // 切片文件
-        formData.append('chunk', chunk)
+        fd.append('chunk', chunk)
         // 切片文件hash
-        formData.append('hash', hash)
+        fd.append('hash', hash)
         // 大文件的文件名
-        formData.append('filename', container.file.name)
+        fd.append('filename', `${formData.appName}_${formData.appVnames[0]}`)
         // 大文件hash
-        formData.append('fileHash', container.hash)
-        return {formData, index}
+        fd.append('fileHash', container.hash)
+        return {fd, index}
       })
-      .map(({formData, index}) => {
+      .map(({fd, index}) => {
         return request({
           url: `${import.meta.env.VITE_API_HOST}/file/upload/bigfile`,
-          data: formData,
+          data: fd,
           onProgress: createProgressHandler(index, uploadChunks[index]),
           requestList: [],
         })
@@ -457,11 +530,11 @@ const fileChange = async (mdata) => {
 
   if (verifyData.uploadedList.length + requestList.length === uploadChunks.length) {
     console.log('文件合并')
-    mergeBigFile(container.file.name, container.hash, FILE_BATCH_SIZE)
+    mergeBigFile(`${formData.appName}_${formData.appVnames[0]}`, container.hash, FILE_BATCH_SIZE)
         .then(result => {
           container.uploaded = true
-          data.version.file = result.url
-          data.version.size = result.size
+          formData.versionFile = result.url
+          formData.versionSize = result.size
           ElMessage({
             message: '上传成功',
             type: 'success',
@@ -498,10 +571,9 @@ const mergeBigFile = (filename, fileHash, size) => {
         })
   })
 }
-const deleteBigFile = (filename, fileHash) => {
+const deleteBigFile = (fileHash) => {
   return new Promise((resolve, reject) => {
     return proxy.$axios.post('/file/delete/bigfile', {
-      filename,
       fileHash
     })
         .then(response => {
@@ -539,9 +611,9 @@ onBeforeMount(() => {
         proxy.$axios.get(`/version/nameinfo?name=${name}`).then(response => {
           const appInfo = response.data.data.info;
           const appVersions = response.data.data.versions;
-          data.app.icon = appInfo.icon
-          data.app.name = appInfo.name
-          data.app.versions = appVersions
+          formData.appIcon = appInfo.icon
+          formData.appName = appInfo.name
+          formData.appVersions = appVersions
         })
       }
     })

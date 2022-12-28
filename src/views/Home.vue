@@ -195,7 +195,6 @@ const dumpList = ref([])
 const ranks = ref([])
 const searchs = ref([])
 const {proxy} = getCurrentInstance()
-const that = getCurrentInstance()
 searchKey.value = proxy.$route.params["searchKey"] || ''
 search.value = searchKey.value !== ''
 const activeName = ref(searchKey.value ? 'search' : 'download')
@@ -266,7 +265,7 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
   })
 }
 const dumpSubmit = (form) => {
-  that.refs.ruleFormRef.validate((valid, fields) => {
+  form.validate((valid, fields) => {
     if (valid) {
       proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
         proxy.$axios.get('/dump/infos').then(response => {
@@ -280,6 +279,11 @@ const dumpSubmit = (form) => {
             version: ''
           }
         })
+      })
+    } else {
+      ElMessage({
+        message: '请检查参数',
+        type: 'warning',
       })
     }
   })
