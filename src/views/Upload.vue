@@ -225,6 +225,9 @@ const data = reactive({
   }
 })
 const versionSelect = (version) => {
+  if (version.length > 1) {
+    formData.appVnames = [version.slice(-1)[0]]
+  }
   let findVersion = formData.appVersions.find(item => {
     return item.name === version[0]
   })
