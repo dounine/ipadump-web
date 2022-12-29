@@ -473,7 +473,7 @@ const fileChange = async (mdata) => {
   // }
   const fileChunkList = createFileChunk(mdata.raw)
   container.hash = await createChunkListHash(fileChunkList)
-  const verifyData = await verifyFile(`${formData.appName}_${formData.appVnames[0]}`, container.hash)
+  const verifyData = await verifyFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash)
   if (!verifyData.shouldUpload) {
     console.log('服务器已有上传文件，秒传成功', verifyData)
     percentage.value = 100
@@ -512,7 +512,7 @@ const fileChange = async (mdata) => {
         // 切片文件hash
         fd.append('hash', hash)
         // 大文件的文件名
-        fd.append('filename', `${formData.appName}_${formData.appVnames[0]}`)
+        fd.append('filename', `${formData.appName}_${formData.appVnames[0]}.ipa`)
         // 大文件hash
         fd.append('fileHash', container.hash)
         return {fd, index}
@@ -530,7 +530,7 @@ const fileChange = async (mdata) => {
 
   if (verifyData.uploadedList.length + requestList.length === uploadChunks.length) {
     console.log('文件合并')
-    mergeBigFile(`${formData.appName}_${formData.appVnames[0]}`, container.hash, FILE_BATCH_SIZE)
+    mergeBigFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash, FILE_BATCH_SIZE)
         .then(result => {
           container.uploaded = true
           formData.versionFile = result.url
@@ -609,10 +609,11 @@ onBeforeMount(() => {
       if (response.data.data.length > 0) {
         let name = response.data.data[0].name
         proxy.$axios.get(`/version/nameinfo?name=${name}`).then(response => {
-          const appInfo = response.data.data.info;
-          const appVersions = response.data.data.versions;
+          const appInfo = response.data.data.info
+          const appVersions = response.data.data.versions
           formData.appIcon = appInfo.icon
           formData.appName = appInfo.name
+          formData.appDes = appInfo.des
           formData.appVersions = appVersions
         })
       }
