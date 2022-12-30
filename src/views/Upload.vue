@@ -45,9 +45,9 @@
               :auto-upload="false"
           >
             <template #trigger>
-              <el-button type="primary" :disabled="!formData.appVnames[0]">选择ipa</el-button>
+              <el-button type="primary" :disabled="!formData.appVnames[0] || container.upLoading">选择ipa</el-button>
             </template>
-            <el-button class="ml-3" :disabled="!formData.appVnames[0]" type="success" @click="submitUpload"
+            <el-button :loading="container.upLoading" class="ml-3" :disabled="!formData.appVnames[0] || !container.file" type="success" @click="submitUpload"
                        style="margin-left:20px;">
               上传
             </el-button>
@@ -103,7 +103,7 @@
         <el-input v-model="formData.versionDes" type="textarea"/>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="onSubmit(ruleFormRef)">提交</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="onSubmit(ruleFormRef)">提交</el-button>
         <el-button>取消</el-button>
       </el-form-item>
     </el-form>
@@ -121,8 +121,81 @@ import type {UploadInstance, UploadProps, UploadRawFile} from 'element-plus'
 const upload = ref<UploadInstance>()
 const FILE_BATCH_SIZE = 200 * 1024
 
-const submitUpload = () => {
-  upload.value!.submit()
+const submitUpload = async () => {
+  // upload.value!.submit()
+  container.upLoading = true
+  const fileChunkList = createFileChunk(container.file)
+  container.hash = await createChunkListHash(fileChunkList)
+  const verifyData = await verifyFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash)
+  if (!verifyData.shouldUpload) {
+    console.log('服务器已有上传文件，秒传成功', verifyData)
+    percentage.value = 100
+    formData.versionFile = verifyData.file.url
+    formData.versionSize = verifyData.file.size
+    container.upLoading = false
+    return
+  }
+  const uploadChunks = fileChunkList.map(({file}, index) => ({
+    fileHash: container.hash,
+    index,
+    hash: `${container.hash}-${index}`,
+    chunk: file,
+    size: file.size,
+    percentage: verifyData.uploadedList.includes(index) ? 100 : 0,
+  }))
+  chunkData.value = uploadChunks
+
+  container.interval = setInterval(() => {
+    percentage.value = uploadPercentage()
+    if (percentage.value >= 100) {
+      clearInterval(container.interval)
+    }
+  }, 200)
+
+  //过滤已经上传的切片
+  const requestList = uploadChunks
+      .filter(({hash}) => !verifyData.uploadedList.includes(hash))
+      .map(({chunk, hash, index}) => {
+        const fd = new FormData()
+        // 切片文件
+        fd.append('chunk', chunk)
+        // 切片文件hash
+        fd.append('hash', hash)
+        // 大文件的文件名
+        fd.append('filename', `${formData.appName}_${formData.appVnames[0]}.ipa`)
+        // 大文件hash
+        fd.append('fileHash', container.hash)
+        return {fd, index}
+      })
+      .map(({fd, index}) => {
+        return request({
+          url: `${import.meta.env.VITE_API_HOST}/file/upload/bigfile`,
+          data: fd,
+          onProgress: createProgressHandler(index, uploadChunks[index]),
+          requestList: [],
+        })
+      })
+
+  await Promise.all(requestList)
+
+  if (verifyData.uploadedList.length + requestList.length === uploadChunks.length) {
+    console.log('文件合并中...')
+    mergeBigFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash, FILE_BATCH_SIZE)
+        .then(result => {
+          console.log('文件合并成功')
+          formData.versionFile = result.url
+          formData.versionSize = result.size
+          container.upLoading = false
+          ElMessage({
+            message: '上传成功',
+            type: 'success',
+          })
+        })
+    // setTimeout(async () => {
+    //   await deleteBigFile(container.file.name, container.hash)
+    // }, 1000)
+  }
+
 }
 import {
   Download,
@@ -135,6 +208,7 @@ const {proxy} = getCurrentInstance()
 let appid = proxy.$route.params["appid"]
 import {reactive} from 'vue'
 
+const submitLoading = ref(false)
 const uploadRef = ref(null)
 const unzipLoading = ref(false)
 const loadIpaLoading = ref(false)
@@ -145,7 +219,8 @@ const container = reactive({
   file: null,
   hash: '',
   worker: null,
-  interval: null
+  interval: null,
+  upLoading: false
 })
 const ruleFormRef = ref()
 const rules = reactive({
@@ -203,7 +278,7 @@ const formData = reactive({
   versionUnzip: false,
   versionIcons: []
 })
-const iconLoad = () =>{
+const iconLoad = () => {
   formData.appIcon = `https://api.ipadump.com/file/pan/preview?path=/icon/${formData.appName}.png`
 }
 const versionSelect = (version) => {
@@ -213,7 +288,6 @@ const versionSelect = (version) => {
   let findVersion = formData.appVersions.find(item => {
     return item.name === version[0]
   })
-  console.log(findVersion)
   if (findVersion) {
     formData.versionAppid = findVersion.appid
     formData.versionName = findVersion.name
@@ -288,6 +362,7 @@ const switchUnzip = (e) => {
 const onSubmit = (form) => {
   form.validate((valid, fields) => {
     if (valid) {
+      submitLoading.value = true
       proxy.$axios.post(`/version/addOrUpdate`, {
         app: {
           name: formData.appName,
@@ -305,6 +380,7 @@ const onSubmit = (form) => {
         }
       }).then(response => {
         if (response.data.code === 0) {
+          submitLoading.value = false
           ElMessage({
             message: '成功处理',
             type: 'success',
@@ -457,74 +533,6 @@ const fileChange = async (mdata) => {
   //   })
   //   return
   // }
-  const fileChunkList = createFileChunk(mdata.raw)
-  container.hash = await createChunkListHash(fileChunkList)
-  const verifyData = await verifyFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash)
-  if (!verifyData.shouldUpload) {
-    console.log('服务器已有上传文件，秒传成功', verifyData)
-    percentage.value = 100
-    formData.versionFile = verifyData.file.url
-    formData.versionSize = verifyData.file.size
-    return
-  }
-  const uploadChunks = fileChunkList.map(({file}, index) => ({
-    fileHash: container.hash,
-    index,
-    hash: `${container.hash}-${index}`,
-    chunk: file,
-    size: file.size,
-    percentage: verifyData.uploadedList.includes(index) ? 100 : 0,
-  }))
-  chunkData.value = uploadChunks
-
-  container.interval = setInterval(() => {
-    percentage.value = uploadPercentage()
-    if (percentage.value >= 100) {
-      clearInterval(container.interval)
-    }
-  }, 200)
-
-  //过滤已经上传的切片
-  const requestList = uploadChunks
-      .filter(({hash}) => !verifyData.uploadedList.includes(hash))
-      .map(({chunk, hash, index}) => {
-        const fd = new FormData()
-        // 切片文件
-        fd.append('chunk', chunk)
-        // 切片文件hash
-        fd.append('hash', hash)
-        // 大文件的文件名
-        fd.append('filename', `${formData.appName}_${formData.appVnames[0]}.ipa`)
-        // 大文件hash
-        fd.append('fileHash', container.hash)
-        return {fd, index}
-      })
-      .map(({fd, index}) => {
-        return request({
-          url: `${import.meta.env.VITE_API_HOST}/file/upload/bigfile`,
-          data: fd,
-          onProgress: createProgressHandler(index, uploadChunks[index]),
-          requestList: [],
-        })
-      })
-
-  await Promise.all(requestList)
-
-  if (verifyData.uploadedList.length + requestList.length === uploadChunks.length) {
-    console.log('文件合并')
-    mergeBigFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash, FILE_BATCH_SIZE)
-        .then(result => {
-          formData.versionFile = result.url
-          formData.versionSize = result.size
-          ElMessage({
-            message: '上传成功',
-            type: 'success',
-          })
-        })
-    // setTimeout(async () => {
-    //   await deleteBigFile(container.file.name, container.hash)
-    // }, 1000)
-  }
 }
 const hashHref = new URL('../assets/static/js/hash.js', import.meta.url).href
 const createChunkListHash = (fileChunkList) => {
