@@ -42,13 +42,15 @@
                   <div
                       style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
                     <div>
-                      <img style="width:30px;height:30px;margin-top:14px;" :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
+                      <img style="width:30px;height:30px;margin-top:14px;"
+                           :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
                     </div>
                     <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
                   </div>
                   <div style="flex:1;">
                     <div style="display: flex">
-                      <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
+                      <div
+                          style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
                         <span style="font-size: 14px">{{ rank.des }}</span>
                       </div>
                       <div>
@@ -138,6 +140,18 @@
               </div>
             </el-card>
           </el-tab-pane>
+          <el-tab-pane label="软件源" name="store">
+            <div class="storeTxt">
+              <span>支持：`轻松签`、`全能签`</span>
+              <span style="display: block;">说明：直接在软件源上添加即可使用</span>
+            </div>
+            <div class="store">
+              <div class="left">https://store.ipadump.com</div>
+              <div class="right">
+                <el-button :icon="DocumentCopy" circle @click="storeCopy"/>
+              </div>
+            </div>
+          </el-tab-pane>
         </el-tabs>
       </div>
     </el-main>
@@ -155,7 +169,8 @@ import {getCurrentInstance, onBeforeMount, ref, reactive, nextTick} from 'vue';
 import {
   ArrowRightBold,
   Search,
-  ArrowRight
+  ArrowRight,
+  DocumentCopy
 } from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
 
@@ -211,6 +226,18 @@ const tabClick = (tab) => {
       dumpList.value = response.data.data
     })
   }
+}
+const storeCopy = () =>{
+  const save = function(e) {
+    e.clipboardData.setData('text/plain', 'https://store.ipadump.com')
+    e.preventDefault() // 阻止默认行为
+  }
+  document.addEventListener('copy', save) // 添加一个copy事件
+  document.execCommand('copy') // 执行copy方法
+  ElMessage({
+    message: '复制成功',
+    type: 'success',
+  })
 }
 const dumpStatusFormat = (status) => {
   if (status === 0) {
@@ -340,6 +367,25 @@ onBeforeMount(() => {
     opacity: 0.8;
     color: #409eff;
     //background-color: #cccccc;
+  }
+}
+
+.storeTxt {
+  font-size: 14px;
+  color: #42b983;
+  text-indent: 10px;
+  padding: 10px 0;
+}
+
+.store {
+  border-radius: 6px;
+  padding: 16px;
+  background-color: rgba(245, 247, 249, 1.00);
+  color: rgba(130, 80, 223, 1.00);
+  display: flex;
+
+  .left{
+    flex: 1;
   }
 }
 </style>
