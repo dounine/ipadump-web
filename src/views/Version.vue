@@ -25,7 +25,7 @@
               </div>
               <div style="flex:1;">
                 <div style="display: flex">
-                  <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;">
+                  <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
                     <span style="font-size: 14px">{{ version.des }}</span>
                   </div>
                   <div>

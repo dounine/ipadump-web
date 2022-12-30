@@ -3,6 +3,7 @@
     <el-form status-icon ref="ruleFormRef" :model="formData" :rules="rules" label-width="80px">
       <el-form-item label="应用图标">
         <img :src="formData.appIcon" style="width:30px;height:30px;"/>
+        <el-button @click="iconLoad" style="margin-left:20px;" :disabled="!formData.appName">加载</el-button>
       </el-form-item>
       <el-form-item label="应用名称" prop="appName">
         <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
@@ -141,7 +142,6 @@ const percentage = ref(0)
 const hashPercentage = ref(0)
 const chunkData = ref([])
 const container = reactive({
-  uploaded: false,
   file: null,
   hash: '',
   worker: null,
@@ -203,27 +203,9 @@ const formData = reactive({
   versionUnzip: false,
   versionIcons: []
 })
-const data = reactive({
-  app: {
-    name: '',
-    des: '',
-    icon: '',
-    versions: [],
-    vnames: [],
-  },
-  version: {
-    appid: '',
-    name: '',
-    push: false,
-    des: '',
-    download: 0,
-    size: 0,
-    file: '',
-    time: '',
-    unzip: false,
-    icons: []
-  }
-})
+const iconLoad = () =>{
+  formData.appIcon = `https://api.ipadump.com/file/pan/preview?path=/icon/${formData.appName}.png`
+}
 const versionSelect = (version) => {
   if (version.length > 1) {
     formData.appVnames = [version.slice(-1)[0]]
@@ -231,6 +213,7 @@ const versionSelect = (version) => {
   let findVersion = formData.appVersions.find(item => {
     return item.name === version[0]
   })
+  console.log(findVersion)
   if (findVersion) {
     formData.versionAppid = findVersion.appid
     formData.versionName = findVersion.name
@@ -242,15 +225,15 @@ const versionSelect = (version) => {
     formData.versionTime = findVersion.time
     formData.versionIcons = findVersion.icons
   } else {
-    formData.versionAppid = ''
+    formData.versionAppid = formData.appName
     formData.versionName = ''
-    formData.versionPush = false
+    formData.versionPush = true
     formData.versionDes = ''
-    formData.versionDownload = ''
-    formData.versionSize = ''
+    formData.versionDownload = 0
+    formData.versionSize = 0
     formData.versionFile = ''
     formData.versionTime = ''
-    formData.versionIcons = ''
+    formData.versionIcons = []
   }
 }
 const parseQueryString = url => {
@@ -264,7 +247,7 @@ const parseQueryString = url => {
 }
 const loadIpaImages = () => {
   loadIpaLoading.value = true
-  let fileJson = parseQueryString(data.version.file)
+  let fileJson = parseQueryString(formData.versionFile)
   if (fileJson.fileId) {
     proxy.$axios.get(`/file/ipa/images?fileId=${fileJson.fileId}`).then(response => {
       formData.versionIcons = response.data.data
@@ -366,6 +349,7 @@ const handleSelect = (item) => {
     const appVersions = response.data.data.versions;
     formData.appIcon = appInfo.icon
     formData.appName = appInfo.name
+    formData.appDes = appInfo.des
     formData.appVersions = appVersions
   })
 }
@@ -423,7 +407,6 @@ const request = ({
 const fileRemove = async (data) => {
   if (container.file.name) {
     await deleteBigFile(container.hash)
-    container.uploaded = false
   }
   container.file = null;
   container.hash = '';
@@ -480,12 +463,8 @@ const fileChange = async (mdata) => {
   if (!verifyData.shouldUpload) {
     console.log('服务器已有上传文件，秒传成功', verifyData)
     percentage.value = 100
-    data.version = {
-      ...data.version,
-      file: verifyData.file.url,
-      size: verifyData.file.size
-    }
-    container.uploaded = true
+    formData.versionFile = verifyData.file.url
+    formData.versionSize = verifyData.file.size
     return
   }
   const uploadChunks = fileChunkList.map(({file}, index) => ({
@@ -535,7 +514,6 @@ const fileChange = async (mdata) => {
     console.log('文件合并')
     mergeBigFile(`${formData.appName}_${formData.appVnames[0]}.ipa`, container.hash, FILE_BATCH_SIZE)
         .then(result => {
-          container.uploaded = true
           formData.versionFile = result.url
           formData.versionSize = result.size
           ElMessage({

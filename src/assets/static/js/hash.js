@@ -1,4 +1,4 @@
-self.importScripts('./spark-md5.min.js')
+self.importScripts('https://ipadump.com/static/js/spark-md5.min.js')
 
 /**
  * 正因为每个文件的md5是一样的，那么，我们在做文件上传的时候，

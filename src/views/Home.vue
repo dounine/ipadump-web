@@ -42,13 +42,13 @@
                   <div
                       style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
                     <div>
-                      <img style="width:30px;height:30px;margin-top:14px;" :src="rank.icon"/>
+                      <img style="width:30px;height:30px;margin-top:14px;" :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
                     </div>
                     <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
                   </div>
                   <div style="flex:1;">
                     <div style="display: flex">
-                      <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;">
+                      <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
                         <span style="font-size: 14px">{{ rank.des }}</span>
                       </div>
                       <div>

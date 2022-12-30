@@ -8,7 +8,6 @@ const qiniuData = require('./.qiniu.json')
 
 const key = qiniuData.key
 const token = qiniuData.token
-const pathPre = "pet-qrcode"
 
 
 // 文件读取方法
@@ -34,21 +33,21 @@ gulp.task('clean', cb => {
 });
 
 async function ossUpload(path) {
-    console.log('upload', path, `${pathPre}/${path.substring("dist/".length)}`)
+    console.log('upload', path, `${path.substring("dist/".length)}`)
     await upload({
         ak: key,
         sk: token,
-        scope: 'douyinpay',
+        scope: 'ipadump',
         zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
-    }, path, `${pathPre}/${path.substring("dist/".length)}`)
-    console.log('upload success ', path, 'https://douyin.61week.com/' + `${pathPre}/${path.substring("dist/".length)}`)
+    }, path, `${path.substring("dist/".length)}`)
+    console.log('upload success ', path, 'https://ipadump.com/' + `${path.substring("dist/".length)}`)
 }
 
 // 替换SDK内的变量
 gulp.task('replacePath', () => {
     return gulp.src('./dist/index.html')
-        .pipe(replace("/assets", `/${pathPre}/assets`))
-        .pipe(replace("favicon.ico", `${pathPre}/favicon.ico`))
+        .pipe(replace("/assets", `/assets`))
+        // .pipe(replace("favicon.ico", `${pathPre}/favicon.ico`))
         .pipe(gulp.dest('./dist', {overwrite: true}))
 })
 
@@ -67,16 +66,16 @@ gulp.task('uploadStaticResource', async cb => {
         await upload({
             ak: key,
             sk: token,
-            scope: 'douyinpay',
+            scope: 'ipadump',
             zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
-        }, info.fullPath, `${pathPre}/static/${info.fullPath.substring("src/assets/static/".length)}`)
+        }, info.fullPath, `static/${info.fullPath.substring("src/assets/static/".length)}`)
     }));
 })
 gulp.task('uploadCat', async cb => {
     await upload({
         ak: key,
         sk: token,
-        scope: 'douyinpay',
+        scope: 'ipadump',
         zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
     }, 'src/assets/pet.html', `pet/pet.html`)
     return new Promise(function (resolve, reject) {
@@ -87,7 +86,7 @@ gulp.task('uploadDog', async cb => {
     await upload({
         ak: key,
         sk: token,
-        scope: 'douyinpay',
+        scope: 'ipadump',
         zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
     }, 'src/assets/dog.html', `pet/dog.html`)
     return new Promise(function (resolve, reject) {
@@ -95,5 +94,5 @@ gulp.task('uploadDog', async cb => {
     })
 });
 // 上传
-gulp.task('upload', gulp.series(['replacePath', 'uploadStaticResource', 'uploadResource', 'uploadCat', 'uploadDog']));
+gulp.task('upload', gulp.series(['replacePath', 'uploadStaticResource', 'uploadResource']));
 
