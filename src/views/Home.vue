@@ -7,7 +7,7 @@
       <div class="max">
         <div class="introd">
           <h1>ipa软件下载</h1>
-          <p>ipadump，提供在线ios应用ipa在线砸壳、不限制下载</p>
+          <p>ipadump，提供在线ios应用ipa在线砸壳提取下载</p>
         </div>
         <div class="searchBox">
           <el-autocomplete
@@ -139,7 +139,8 @@
                     <div style="flex:1;margin-left:10px;font-weight: 500;">{{ du.appid }}</div>
                     <div style="font-size: 14px;margin-right:10px;">{{
                         du.version
-                      }} / {{ du.count }} / <strong>{{ dumpStatusFormat(du.status) }}</strong>
+                      }} / {{ du.count }} / <strong
+                          :style="{color:dumpStatusColor(du.status)}">{{ dumpStatusFormat(du.status) }}</strong>
                     </div>
                   </div>
                 </div>
@@ -202,10 +203,11 @@ const dumpRules = reactive({
     },
     {
       validator: (rule, value, callback) => {
-        if (!/\d+.\d+.\d+/.exec(value)) {
-          callback(new Error('请输入正确的版本号'))
-        } else {
+        let va = /\d+[.]\d+[.]\d+([.]\d+)?/.test(value)
+        if (va) {
           callback()
+        } else {
+          callback(new Error('请输入正确的版本号'))
         }
       },
       trigger: 'change'
@@ -245,15 +247,25 @@ const storeCopy = () => {
     type: 'success',
   })
 }
+const dumpStatusColor = (status) => {
+  if (status === 1) {
+    return 'green'
+  } else if (status === 2) {
+    return '#ccc'
+  } else if (status === 3) {
+    return 'red'
+  }
+  return 'black'
+}
 const dumpStatusFormat = (status) => {
   if (status === 0) {
     return '申请中'
   } else if (status === 1) {
     return '砸壳中'
   } else if (status === 2) {
-    return '不可砸壳'
-  } else if (status === 3) {
     return '完成'
+  } else if (status === 3) {
+    return '不可砸'
   }
   return '未知'
 }
