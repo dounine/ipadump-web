@@ -366,12 +366,10 @@ const dumpSubmit = (form) => {
               type: 'success',
             })
             dumpList.value = response.data.data
-            dump.value = {
-              appid: '',
-              version: '',
-              token: '',
-              code: ''
-            }
+            dump.appid = ''
+            dump.version = ''
+            dump.token = ''
+            dump.code = ''
             changeCaptcha()
           } else {
             ElMessage({
