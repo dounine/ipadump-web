@@ -1,113 +1,121 @@
 <template>
-  <el-main>
-    <el-form status-icon ref="ruleFormRef" :model="formData" :rules="rules" label-width="80px">
-      <el-form-item label="应用图标">
-        <img :src="formData.appIcon" style="width:30px;height:30px;"/>
-        <el-button @click="iconLoad" style="margin-left:20px;" :disabled="!formData.appName">加载</el-button>
-      </el-form-item>
-      <el-form-item label="应用名称" prop="appName">
-        <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
-                         v-model="formData.appName"/>
-      </el-form-item>
-      <el-form-item label="应用描述" prop="appDes">
-        <el-input v-model="formData.appDes" type="textarea"/>
-      </el-form-item>
-      <el-divider content-position="left">版本信息</el-divider>
-      <el-form-item label="应用版本" prop="appVnames">
-        <el-select
-            v-model="formData.appVnames"
-            filterable
-            multiple
-            @change="versionSelect"
-            allow-create
-            default-first-option
-            :reserve-keyword="false"
-            placeholder="请选择或者输入版本"
-        >
-          <el-option
-              v-for="item in formData.appVersions"
-              :key="item.name"
-              :label="item.name"
-              :value="item.name"
-          />
-        </el-select>
-        <el-button @click="deleteVersion" :disabled="!formData.appVnames[0] || !formData.appName" :icon="Delete">删除
-        </el-button>
-      </el-form-item>
-      <el-form-item label="ipa文件">
-        <div style="width:100%;">
-          <el-upload
-              ref="uploadRef"
-              class="upload-demo"
-              :limit="1"
-              :on-change="fileChange"
-              :before-remove="fileRemove"
-              :auto-upload="false"
-          >
-            <template #trigger>
-              <el-button type="primary" :disabled="!formData.appVnames[0] || container.upLoading">选择ipa</el-button>
-            </template>
-            <el-button :loading="container.upLoading" class="ml-3" :disabled="!formData.appVnames[0] || !container.file" type="success" @click="submitUpload"
-                       style="margin-left:20px;">
-              上传
+  <el-container>
+    <el-header height="80">
+      <Header/>
+    </el-header>
+    <el-main>
+      <div class="max">
+        <el-form status-icon ref="ruleFormRef" :model="formData" :rules="rules" label-width="80px">
+          <el-form-item label="应用图标">
+            <img :src="formData.appIcon" style="width:30px;height:30px;"/>
+            <el-button @click="iconLoad" style="margin-left:20px;" :disabled="!formData.appName">加载</el-button>
+          </el-form-item>
+          <el-form-item label="应用名称" prop="appName">
+            <el-autocomplete style="width:100%;" @select="handleSelect" :fetch-suggestions="querySearchAsync"
+                             v-model="formData.appName"/>
+          </el-form-item>
+          <el-form-item label="应用描述" prop="appDes">
+            <el-input v-model="formData.appDes" type="textarea"/>
+          </el-form-item>
+          <el-divider content-position="left">版本信息</el-divider>
+          <el-form-item label="应用版本" prop="appVnames">
+            <el-select
+                v-model="formData.appVnames"
+                filterable
+                multiple
+                @change="versionSelect"
+                allow-create
+                default-first-option
+                :reserve-keyword="false"
+                placeholder="请选择或者输入版本"
+            >
+              <el-option
+                  v-for="item in formData.appVersions"
+                  :key="item.name"
+                  :label="item.name"
+                  :value="item.name"
+              />
+            </el-select>
+            <el-button @click="deleteVersion" :disabled="!formData.appVnames[0] || !formData.appName" :icon="Delete">删除
             </el-button>
+          </el-form-item>
+          <el-form-item label="ipa文件">
+            <div style="width:100%;">
+              <el-upload
+                  ref="uploadRef"
+                  class="upload-demo"
+                  :limit="1"
+                  :on-change="fileChange"
+                  :before-remove="fileRemove"
+                  :auto-upload="false"
+              >
+                <template #trigger>
+                  <el-button type="primary" :disabled="!formData.appVnames[0] || container.upLoading">选择ipa</el-button>
+                </template>
+                <el-button :loading="container.upLoading" class="ml-3"
+                           :disabled="!formData.appVnames[0] || !container.file" type="success" @click="submitUpload"
+                           style="margin-left:20px;">
+                  上传
+                </el-button>
 
-          </el-upload>
-          <el-progress :percentage="hashPercentage" color="#f56c6c">
-            hash
-          </el-progress>
-          <el-progress style="width:100%;" :percentage="percentage">
-            上传{{ percentage }}
-          </el-progress>
-        </div>
-      </el-form-item>
-      <el-form-item label="版本发布">
-        <el-switch v-model="formData.versionPush"/>
-      </el-form-item>
-      <el-form-item label="是否解压">
-        <el-switch :loading="unzipLoading" @change="switchUnzip" v-model="formData.versionUnzip"/>
-        <el-button style="margin-left:20px;" v-if="formData.versionUnzip && !unzipLoading" @click="loadIpaImages"
-                   :loading="loadIpaLoading">
-          加载ipa图片
-        </el-button>
-        <el-select v-model="formData.appIcon" placeholder="使用icon" v-if="formData.versionUnzip && !unzipLoading">
-          <el-option
-              v-for="item in formData.versionIcons"
-              :key="item.name"
-              :label="item.name"
-              :value="item.url"
-          >
-            <span style="float: left">{{ item.name }}</span>
-            <span
-                style="
+              </el-upload>
+              <el-progress :percentage="hashPercentage" color="#f56c6c">
+                hash
+              </el-progress>
+              <el-progress style="width:100%;" :percentage="percentage">
+                上传{{ percentage }}
+              </el-progress>
+            </div>
+          </el-form-item>
+          <el-form-item label="版本发布">
+            <el-switch v-model="formData.versionPush"/>
+          </el-form-item>
+          <el-form-item label="是否解压">
+            <el-switch :loading="unzipLoading" @change="switchUnzip" v-model="formData.versionUnzip"/>
+            <el-button style="margin-left:20px;" v-if="formData.versionUnzip && !unzipLoading" @click="loadIpaImages"
+                       :loading="loadIpaLoading">
+              加载ipa图片
+            </el-button>
+            <el-select v-model="formData.appIcon" placeholder="使用icon" v-if="formData.versionUnzip && !unzipLoading">
+              <el-option
+                  v-for="item in formData.versionIcons"
+                  :key="item.name"
+                  :label="item.name"
+                  :value="item.url"
+              >
+                <span style="float: left">{{ item.name }}</span>
+                <span
+                    style="
           float: right;
           color: var(--el-text-color-secondary);
           font-size: 13px;
         "
-            ><img style="width:30px;height:30px;" :src="item.url"/></span
-            >
-          </el-option>
-        </el-select>
+                ><img style="width:30px;height:30px;" :src="item.url"/></span
+                >
+              </el-option>
+            </el-select>
 
-      </el-form-item>
-      <el-form-item label="版本大小">
-        <span>{{ Common.sizeFormat(formData.versionSize) }}</span>
-      </el-form-item>
-      <el-form-item label="下载次数">
-        <span>{{ formData.versionDownload }}</span>
-      </el-form-item>
-      <el-form-item label="文件地址">
-        <a :href="formData.versionFile">{{ formData.versionFile }}</a>
-      </el-form-item>
-      <el-form-item label="版本描述" prop="versionDes">
-        <el-input v-model="formData.versionDes" type="textarea"/>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="submitLoading" @click="onSubmit(ruleFormRef)">提交</el-button>
-        <el-button>取消</el-button>
-      </el-form-item>
-    </el-form>
-  </el-main>
+          </el-form-item>
+          <el-form-item label="版本大小">
+            <span>{{ Common.sizeFormat(formData.versionSize) }}</span>
+          </el-form-item>
+          <el-form-item label="下载次数">
+            <span>{{ formData.versionDownload }}</span>
+          </el-form-item>
+          <el-form-item label="文件地址">
+            <a :href="formData.versionFile">{{ formData.versionFile }}</a>
+          </el-form-item>
+          <el-form-item label="版本描述" prop="versionDes">
+            <el-input v-model="formData.versionDes" type="textarea"/>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" :loading="submitLoading" @click="onSubmit(ruleFormRef)">提交</el-button>
+            <el-button>取消</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </el-main>
+  </el-container>
 </template>
 
 <script lang="ts" setup>
@@ -612,6 +620,11 @@ onBeforeMount(() => {
 </script>
 
 <style lang="scss" scoped>
+.max {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
 .myfont {
   color: #323233;
 }

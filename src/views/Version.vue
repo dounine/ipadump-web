@@ -4,44 +4,47 @@
       <Header/>
     </el-header>
     <el-main>
-      <div class="rank-box">
-        <el-card>
-          <template #header>
-            <div class="card-header">
-              <el-breadcrumb :separator-icon="ArrowRight">
-                <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-                <el-breadcrumb-item>{{ app.info.name }}历史版本</el-breadcrumb-item>
-              </el-breadcrumb>
-            </div>
-          </template>
-          <div v-if="app.versions.length>0" v-for="version in app.versions" :key="version.name" class="rank-row">
-            <div style="display: flex;">
-              <div
-                  style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
-                <div>
-                  <img style="width:30px;height:30px;margin-top:14px;" :src="app.info.icon"/>
-                </div>
-                <div style="margin-left:10px;font-weight: 500;">{{ app.info.name }}</div>
+      <div class="max">
+        <div class="rank-box">
+          <el-card>
+            <template #header>
+              <div class="card-header">
+                <el-breadcrumb :separator-icon="ArrowRight">
+                  <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                  <el-breadcrumb-item>{{ app.info.name }}历史版本</el-breadcrumb-item>
+                </el-breadcrumb>
               </div>
-              <div style="flex:1;">
-                <div style="display: flex">
-                  <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
-                    <span style="font-size: 14px">{{ version.des }}</span>
-                  </div>
+            </template>
+            <div v-if="app.versions.length>0" v-for="version in app.versions" :key="version.name" class="rank-row">
+              <div style="display: flex;">
+                <div
+                    style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
                   <div>
+                    <img style="width:30px;height:30px;margin-top:14px;" :src="app.info.icon"/>
+                  </div>
+                  <div style="margin-left:10px;font-weight: 500;">{{ app.info.name }}</div>
+                </div>
+                <div style="flex:1;">
+                  <div style="display: flex">
+                    <div
+                        style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
+                      <span style="font-size: 14px">{{ version.des }}</span>
+                    </div>
+                    <div>
                     <span style="font-size: 14px;margin-right:10px;">{{
                         version.name
                       }} / {{ Common.sizeFormat(version.size) }}</span>
-                    <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
+                      <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div v-else>
-            <el-empty :image-size="100" description="没有数据"/>
-          </div>
-        </el-card>
+            <div v-else>
+              <el-empty :image-size="100" description="没有数据"/>
+            </div>
+          </el-card>
+        </div>
       </div>
     </el-main>
     <el-footer>
@@ -84,6 +87,11 @@ onBeforeMount(() => {
 <style lang="scss" scoped>
 .myfont {
   color: #323233;
+}
+
+.max {
+  max-width: 1140px;
+  margin: 0 auto;
 }
 
 .rank-box {
