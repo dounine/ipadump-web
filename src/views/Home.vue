@@ -5,6 +5,10 @@
     </el-header>
     <el-main>
       <div class="max">
+        <div class="introd">
+          <h1>ipa软件下载</h1>
+          <p>ipadump，提供在线ios应用ipa在线砸壳、不限制下载</p>
+        </div>
         <div class="searchBox">
           <el-autocomplete
               style="width:100%"
@@ -397,6 +401,23 @@ onBeforeMount(() => {
 
   .left {
     flex: 1;
+  }
+}
+
+.introd {
+  text-align: center;
+
+  h1 {
+    font-size: 34px;
+    line-height: 48px;
+    color: #555;
+  }
+
+  p {
+    color: #888;
+    font-size: 18px;
+    line-height: 28px;
+    margin: 10px 0 5px;
   }
 }
 </style>
