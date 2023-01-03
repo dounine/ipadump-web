@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <div class="max">
-      <a href="/"><img style="height:50px;margin-top:15px;" src="../assets/static/img/logo.png"/></a>
+      <a href="/"><img alt="ipa软件下载,ipa在线砸壳,ios应用砸壳,ios应用提取,ipa砸壳,ipa提取" style="height:50px;margin-top:15px;" src="../assets/static/img/logo.png"/></a>
     </div>
     <!--    <a href="/" style="text-decoration: none;font-size: 20px;font-weight: 500;">IpaDump</a> <span-->
     <!--      style="font-size: 20px;font-weight: 500;text-indent: 4px;">专注 IOS 应用在线砸壳</span>-->
