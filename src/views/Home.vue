@@ -122,6 +122,14 @@
                     <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号"/>
                   </el-form-item>
                   <el-form-item>
+                    <img id="captcha" ref="captchaRef" @click="changeCaptcha" src="" :loading="captchaLoading"/>
+                    <a href="javascript:void(0)" @click="changeCaptcha"
+                       style="text-decoration: none;color:#9cf;margin-left:20px;">换一换</a>
+                  </el-form-item>
+                  <el-form-item label="验证码" prop="code">
+                    <el-input v-model="dump.code" maxlength="20" placeholder="请输入验证码"/>
+                  </el-form-item>
+                  <el-form-item>
                     <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
                       申请在线砸壳
                     </el-button>
@@ -190,6 +198,8 @@ const ruleFormRef = ref()
 const dump = reactive({
   version: '',
   appid: '',
+  token: '',
+  code: ''
 })
 const dumpRules = reactive({
   appid: [{
@@ -197,6 +207,28 @@ const dumpRules = reactive({
   }, {
     min: 2, max: 20, message: '长度在2~20之间', trigger: 'blur'
   }],
+  code: [{
+    required: true, message: '请输入验证码'
+  }, {
+    validator: (rule, value, callback) => {
+      if (value.length === 4) {
+        proxy.$axios.post('/dump/captcha/valid', {
+          token: dump.token,
+          code: value
+        }).then(response => {
+          if (response.data.data) {
+            callback()
+          } else {
+            callback(new Error('验证码错误'))
+          }
+        })
+      } else {
+        callback(new Error('请输入正确的验证码'))
+      }
+    },
+    trigger: 'change'
+  }
+  ],
   version: [
     {
       required: true, message: '请输入版本号'
@@ -216,11 +248,24 @@ const dumpRules = reactive({
 })
 const dumpList = ref([])
 const ranks = ref([])
+const captchaLoading = ref(false)
+const captchaRef = ref()
 const searchs = ref([])
 const {proxy} = getCurrentInstance()
+const that = getCurrentInstance()
 searchKey.value = proxy.$route.params["searchKey"] || ''
 search.value = searchKey.value !== ''
 const activeName = ref(searchKey.value ? 'search' : 'download')
+const changeCaptcha = () => {
+  captchaLoading.value = true
+  proxy.$axios.get('/dump/captcha', {
+    responseType: 'blob'
+  }).then(response => {
+    dump.token = response.headers['token']
+    that.refs.captchaRef.src = URL.createObjectURL(response.data);
+    captchaLoading.value = false
+  })
+}
 const tabClick = (tab) => {
   let tabName = tab.props.name
   if (tabName === 'download') {
@@ -230,6 +275,7 @@ const tabClick = (tab) => {
       rankLoading.value = false
     })
   } else if (tabName === 'dump') {
+    changeCaptcha()
     proxy.$axios.get('/dump/infos').then(response => {
       dumpList.value = response.data.data
     })
@@ -314,14 +360,24 @@ const dumpSubmit = (form) => {
     if (valid) {
       proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
         proxy.$axios.get('/dump/infos').then(response => {
-          ElMessage({
-            message: '申请成功、请等待砸壳',
-            type: 'success',
-          })
-          dumpList.value = response.data.data
-          dump.value = {
-            appid: '',
-            version: ''
+          if (response.data.code === 0) {
+            ElMessage({
+              message: '申请成功、请等待砸壳',
+              type: 'success',
+            })
+            dumpList.value = response.data.data
+            dump.value = {
+              appid: '',
+              version: '',
+              token: '',
+              code: ''
+            }
+            changeCaptcha()
+          } else {
+            ElMessage({
+              message: response.data.msg,
+              type: 'warning',
+            })
           }
         })
       })
