@@ -139,7 +139,7 @@
                     <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
                       提交在线砸壳
                     </el-button>
-                    <p style="margin-left:20px;color:#999999;">当前平均砸壳时间为30分钟每个ipa</p>
+                    <p style="margin-left:20px;color:#999999;">当前平均ipa砸壳时间为30分钟</p>
                   </el-form-item>
                 </el-form>
               </el-card>
