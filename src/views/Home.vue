@@ -27,6 +27,12 @@
                 <el-option label="美国区" disabled value="us"/>
               </el-select>
             </template>
+            <template #default="{ item }">
+              <div class="searchItem">
+                <img style="width:30px;height:30px;" :src="item.icon"/>
+                <p>{{ item.value }}</p>
+              </div>
+            </template>
             <template #append>
               <el-button size="large" @click="searchFun" :disabled="!searchKey" :icon="Search"/>
             </template>
@@ -108,7 +114,7 @@
                   </div>
                 </div>
                 <div v-else>
-                  <el-empty :image-size="40" description="搜索无结果、可以申请在线砸壳"/>
+                  <el-empty :image-size="40" description="搜索无结果、可以提交在线砸壳"/>
                 </div>
               </el-card>
             </el-tab-pane>
@@ -131,8 +137,9 @@
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
-                      申请在线砸壳
+                      提交在线砸壳
                     </el-button>
+                    <p style="margin-left:20px;color:#999999;">当前平均砸壳时间为30分钟每个ipa</p>
                   </el-form-item>
                 </el-form>
               </el-card>
@@ -305,7 +312,7 @@ const dumpStatusColor = (status) => {
 }
 const dumpStatusFormat = (status) => {
   if (status === 0) {
-    return '申请中'
+    return '处理中'
   } else if (status === 1) {
     return '砸壳中'
   } else if (status === 2) {
@@ -350,7 +357,7 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
     cb(response.data.data.map(item => {
       return {
         value: item.name,
-        link: item.name
+        icon: item.icon || 'https://ipadump.com/static/image/ipa.png'
       }
     }))
   })
@@ -362,7 +369,7 @@ const dumpSubmit = (form) => {
         proxy.$axios.get('/dump/infos').then(response => {
           if (response.data.code === 0) {
             ElMessage({
-              message: '申请成功、请等待砸壳',
+              message: '提交成功、请等待砸壳',
               type: 'success',
             })
             dumpList.value = response.data.data
@@ -421,6 +428,15 @@ onBeforeMount(() => {
 </script>
 
 <style lang="scss" scoped>
+.searchItem {
+  display: flex;
+  padding-top: 6px;
+
+  p {
+    text-indent: 10px;
+  }
+}
+
 .max {
   max-width: 1140px;
   margin: 0 auto;
