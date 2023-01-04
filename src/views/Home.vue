@@ -5,10 +5,7 @@
     </el-header>
     <el-main>
       <div class="max">
-        <div class="introd">
-          <h1>ipa软件下载</h1>
-          <p>ipadump，提供在线ios应用ipa在线砸壳提取下载</p>
-        </div>
+        <Introd/>
         <div class="searchBox">
           <el-autocomplete
               style="width:100%"
@@ -150,7 +147,7 @@
                   </div>
                 </template>
                 <div v-for="du in dumpList" :key="du.appid" class="rank-row">
-                  <div style="display: flex;">
+                  <div style="display: flex;" @click="dumpClick(du)">
                     <div style="flex:1;margin-left:10px;font-weight: 500;">{{ du.appid }}</div>
                     <div style="font-size: 14px;margin-right:10px;">{{
                         du.version
@@ -186,6 +183,7 @@
 <script lang="ts" setup>
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import Introd from '../components/Introd.vue';
 import Common from '../util/common'
 import {getCurrentInstance, onBeforeMount, ref, reactive, nextTick} from 'vue';
 import {
@@ -321,6 +319,12 @@ const dumpStatusFormat = (status) => {
     return '不可砸'
   }
   return '未知'
+}
+const dumpClick = (du) => {
+  if (du.status === 2) {
+    // window.location.href = ``
+    proxy.$router.push(`/versions/${du.appid}`)
+  }
 }
 const chooseVersion = (rank) => {
   proxy.$router.push(`/versions/${rank.appid}`)
@@ -486,20 +490,4 @@ onBeforeMount(() => {
   }
 }
 
-.introd {
-  text-align: center;
-
-  h1 {
-    font-size: 34px;
-    line-height: 48px;
-    color: #555;
-  }
-
-  p {
-    color: #888;
-    font-size: 18px;
-    line-height: 28px;
-    margin: 10px 0 5px;
-  }
-}
 </style>

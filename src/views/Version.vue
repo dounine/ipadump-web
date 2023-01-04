@@ -1,10 +1,11 @@
 <template>
   <el-container>
-    <el-header>
+    <el-header height="80">
       <Header/>
     </el-header>
     <el-main>
       <div class="max">
+        <introd/>
         <div class="rank-box">
           <el-card>
             <template #header>
@@ -56,6 +57,7 @@
 <script lang="ts" setup>
 import Header from '../components/Header.vue';
 import Footer from '../components/Footer.vue';
+import Introd from '../components/Introd.vue';
 import Common from '../util/common'
 import {getCurrentInstance, onBeforeMount, ref} from 'vue';
 import {
