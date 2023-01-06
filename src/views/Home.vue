@@ -134,7 +134,10 @@
                     <el-input v-model="dump.appid" maxlength="20" placeholder="请输入应用名称"/>
                   </el-form-item>
                   <el-form-item label="版本号" prop="version">
-                    <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号"/>
+                    <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号，例如：10.1.1"/>
+                  </el-form-item>
+                  <el-form-item label="通知邮箱" prop="mail">
+                    <el-input v-model="dump.mail" maxlength="20" placeholder="请输入接收通知的邮箱"/>
                   </el-form-item>
                   <el-form-item>
                     <img id="captcha" ref="captchaRef" @click="changeCaptcha" src="" :loading="captchaLoading"/>
@@ -233,6 +236,7 @@ const ruleFormRef = ref()
 const dump = reactive({
   version: '',
   appid: '',
+  mail: '',
   token: '',
   code: ''
 })
@@ -241,6 +245,18 @@ const dumpRules = reactive({
     required: true, message: '请输入应用名称'
   }, {
     min: 2, max: 20, message: '长度在2~20之间', trigger: 'blur'
+  }],
+  mail: [{
+    required: true, message: '请输入邮箱'
+  }, {
+    validator: (rule, value, callback) => {
+      let reg = /^[a-zA-Z0-9]+([-_.][A-Za-zd]+)*@([a-zA-Z0-9]+[-.])+[A-Za-zd]+$/
+      if (reg.test(value)) {
+        callback()
+      } else {
+        callback(new Error('请输入正确的邮箱'))
+      }
+    }
   }],
   code: [{
     required: true, message: '请输入验证码'
@@ -270,7 +286,7 @@ const dumpRules = reactive({
     },
     {
       validator: (rule, value, callback) => {
-        let va = /\d+[.]\d+[.]\d+([.]\d+)?/.test(value)
+        let va = /^\d+(.\d+)+$/.test(value)
         if (va) {
           callback()
         } else {
