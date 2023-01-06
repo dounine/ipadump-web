@@ -7,7 +7,7 @@
       <div class="max">
         <introd/>
         <div class="rank-box">
-          <el-card>
+          <el-card v-loading="loading">
             <template #header>
               <div class="card-header">
                 <el-breadcrumb :separator-icon="ArrowRight">
@@ -83,6 +83,7 @@ const app = ref({
   total: 0
 })
 const currentRankPage = ref(1)
+const loading = ref(true)
 const {proxy} = getCurrentInstance()
 let {appid} = proxy.$route.params
 let {version} = proxy.$route.query
@@ -90,33 +91,20 @@ const downloadFun = (v) => {
   window.location.href = v.file
 }
 const pageChange = (offset) => {
+  loading.value = true
   proxy.$axios.get(`/version/infos/${appid}`, {
     params: {
       offset: (offset - 1) * 10,
       limit: 10
     }
   }).then(response => {
-    app.value = response.data.data
-  })
-  proxy.$axios.get('/version/ranks', {
-    params: {
-      offset: (offset - 1) * 10,
-      limit: 10
-    }
-  }).then(response => {
+    loading.value = false
     app.value = response.data.data
   })
 }
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
-  proxy.$axios.get(`/version/infos/${appid}`, {
-    params: {
-      offset: 0,
-      limit: 10
-    }
-  }).then(response => {
-    app.value = response.data.data
-  })
+  pageChange(1)
 })
 </script>
 

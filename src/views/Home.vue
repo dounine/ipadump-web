@@ -104,7 +104,8 @@
                     </div>
                     <div style="flex:1;">
                       <div style="display: flex;flex-grow: 1;text-align: center;">
-                        <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-indent: 10px">
+                        <div
+                            style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-indent: 10px">
                           <span style="font-size: 14px">{{ rank.des }}</span>
                         </div>
                         <div>
@@ -388,12 +389,20 @@ const dumpStatusFormat = (status) => {
 }
 const dumpClick = (du) => {
   if (du.status === 2) {
-    // window.location.href = ``
-    proxy.$router.push(`/versions/${du.appid}`)
+    proxy.$router.push({
+      path: `/versions/${du.appid}`
+      , query: {
+        version: du.version
+      }
+    })
   }
 }
 const chooseVersion = (rank) => {
-  proxy.$router.push(`/versions/${rank.appid}`)
+  proxy.$router.push({
+    path: `/versions/${rank.appid}`, query: {
+      version: rank.version
+    }
+  })
 }
 const searchFun = () => {
   search.value = true
