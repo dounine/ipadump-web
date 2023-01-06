@@ -187,7 +187,16 @@
               <div class="store">
                 <div class="left">https://store.ipadump.com</div>
                 <div class="right">
-                  <el-button :icon="DocumentCopy" circle @click="storeCopy"/>
+                  <el-button :icon="DocumentCopy" circle @click="storeCopy(1)"/>
+                </div>
+              </div>
+              <div style="color:#888888;margin-top:20px;text-indent: 10px;">
+                或者
+              </div>
+              <div class="store">
+                <div class="left">source[5GHxhb1U7Lcvi4U8sWACZcW8akxVn7cEDfM=]</div>
+                <div class="right">
+                  <el-button :icon="DocumentCopy" circle @click="storeCopy(2)"/>
                 </div>
               </div>
             </el-tab-pane>
@@ -353,9 +362,9 @@ const tabClick = (tab) => {
     })
   }
 }
-const storeCopy = () => {
+const storeCopy = (type) => {
   const save = function (e) {
-    e.clipboardData.setData('text/plain', 'https://store.ipadump.com')
+    e.clipboardData.setData('text/plain', type === 1 ? 'https://store.ipadump.com' : 'source[5GHxhb1U7Lcvi4U8sWACZcW8akxVn7cEDfM=]')
     e.preventDefault() // 阻止默认行为
   }
   document.addEventListener('copy', save) // 添加一个copy事件
@@ -587,14 +596,21 @@ onBeforeMount(() => {
 }
 
 .store {
+  margin-top: 20px;
   border-radius: 6px;
-  padding: 16px;
+  height: 50px;
+  line-height: 50px;
+  text-indent: 10px;
   background-color: rgba(245, 247, 249, 1.00);
   color: rgba(130, 80, 223, 1.00);
   display: flex;
 
   .left {
     flex: 1;
+  }
+
+  .right {
+    margin-right: 10px;
   }
 }
 
