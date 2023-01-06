@@ -50,7 +50,8 @@
                   :auto-upload="false"
               >
                 <template #trigger>
-                  <el-button type="primary" :disabled="!formData.appVnames[0] || container.upLoading">选择ipa</el-button>
+                  <el-button type="primary" :disabled="!formData.appVnames[0] || container.upLoading">选择ipa
+                  </el-button>
                 </template>
                 <el-button :loading="container.upLoading" class="ml-3"
                            :disabled="!formData.appVnames[0] || !container.file" type="success" @click="submitUpload"
@@ -331,7 +332,11 @@ const loadIpaImages = () => {
   loadIpaLoading.value = true
   let fileJson = parseQueryString(formData.versionFile)
   if (fileJson.fileId) {
-    proxy.$axios.get(`/file/ipa/images?fileId=${fileJson.fileId}`).then(response => {
+    proxy.$axios.get(`/file/ipa/images`, {
+      params: {
+        fileId: fileJson.fileId
+      }
+    }).then(response => {
       formData.versionIcons = response.data.data
       loadIpaLoading.value = false
     })
@@ -428,7 +433,11 @@ const deleteVersion = () => {
 }
 const handleSelect = (item) => {
   proxy.$router.push(`/upload/${item.value}`)
-  proxy.$axios.get(`/version/nameinfo?name=${item.value}`).then(response => {
+  proxy.$axios.get(`/version/nameinfo`, {
+    params: {
+      name: item.value
+    }
+  }).then(response => {
     const appInfo = response.data.data.info;
     const appVersions = response.data.data.versions;
     formData.appIcon = appInfo.icon
@@ -442,7 +451,11 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
     cb([])
     return
   }
-  proxy.$axios.get(`/app/keys?key=${queryString || appid}`).then(response => {
+  proxy.$axios.get(`/app/keys`, {
+    params: {
+      key: queryString || appid
+    }
+  }).then(response => {
     cb(response.data.data.map(item => {
       return {
         value: item.name,
@@ -602,10 +615,18 @@ const createFileChunk = (file, size = FILE_BATCH_SIZE) => {
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
   if (appid) {
-    proxy.$axios.get(`/app/keys?key=${appid}`).then(response => {
+    proxy.$axios.get(`/app/keys`, {
+      params: {
+        key: appid
+      }
+    }).then(response => {
       if (response.data.data.length > 0) {
         let name = response.data.data[0].name
-        proxy.$axios.get(`/version/nameinfo?name=${name}`).then(response => {
+        proxy.$axios.get(`/version/nameinfo`, {
+          params: {
+            name
+          }
+        }).then(response => {
           const appInfo = response.data.data.info
           const appVersions = response.data.data.versions
           formData.appIcon = appInfo.icon

@@ -17,7 +17,8 @@
               </div>
             </template>
             <div v-if="app.versions.length>0">
-              <div v-for="version in app.versions" :key="version.name" class="rank-row">
+              <div v-for="v in app.versions" :key="v.name"
+                   :class="'rank-row'+(version===v.name?' version-select':'')">
                 <div style="display: flex;">
                   <div
                       style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
@@ -30,13 +31,13 @@
                     <div style="display: flex">
                       <div
                           style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
-                        <span style="font-size: 14px">{{ version.des }}</span>
+                        <span style="font-size: 14px">{{ v.des }}</span>
                       </div>
                       <div>
                     <span style="font-size: 14px;margin-right:10px;">{{
-                        version.name
-                      }} / {{ Common.sizeFormat(version.size) }}</span>
-                        <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
+                        v.name
+                      }} / {{ Common.sizeFormat(v.size) }}</span>
+                        <el-button type="primary" @click="downloadFun(v)" size="small" :icon="Download" circle/>
                       </div>
                     </div>
                   </div>
@@ -81,12 +82,12 @@ const app = ref({
   versions: [],
   total: 0
 })
-const version = ref([])
 const currentRankPage = ref(1)
 const {proxy} = getCurrentInstance()
-let appid = proxy.$route.params["appid"]
-const downloadFun = (version) => {
-  window.location.href = version.file
+let {appid} = proxy.$route.params
+let {version} = proxy.$route.query
+const downloadFun = (v) => {
+  window.location.href = v.file
 }
 const pageChange = (offset) => {
   proxy.$axios.get(`/version/infos/${appid}`, {
@@ -144,5 +145,9 @@ onBeforeMount(() => {
     color: #409eff;
     //background-color: #cccccc;
   }
+}
+
+.version-select {
+  color: #67c23a;
 }
 </style>

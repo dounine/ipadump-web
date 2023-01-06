@@ -103,8 +103,8 @@
                       <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
                     </div>
                     <div style="flex:1;">
-                      <div style="display: flex">
-                        <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;">
+                      <div style="display: flex;flex-grow: 1;text-align: center;">
+                        <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-indent: 10px">
                           <span style="font-size: 14px">{{ rank.des }}</span>
                         </div>
                         <div>
@@ -400,7 +400,11 @@ const searchFun = () => {
   proxy.$router.push(`/search/${searchKey.value}`)
   rankLoading.value = true
   activeName.value = 'search'
-  proxy.$axios.get(`/version/search?key=${searchKey.value}`).then(response => {
+  proxy.$axios.get(`/version/search`, {
+    params: {
+      key: searchKey.value
+    }
+  }).then(response => {
     rankLoading.value = false
     searchs.value = response.data.data
     searchLoading.value = false
@@ -411,13 +415,21 @@ const handleSelect = (item) => {
   search.value = item.value
   proxy.$router.push(`/search/${item.value}`)
   activeName.value = 'search'
-  proxy.$axios.get(`/version/search?key=${item.value}`).then(response => {
+  proxy.$axios.get(`/version/search`, {
+    params: {
+      key: item.value
+    }
+  }).then(response => {
     rankLoading.value = false
     searchs.value = response.data.data
   })
 }
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
-  proxy.$axios.get(`/app/keys?key=${queryString || ''}`).then(response => {
+  proxy.$axios.get(`/app/keys`, {
+    params: {
+      key: queryString || ''
+    }
+  }).then(response => {
     cb(response.data.data.map(item => {
       return {
         value: item.name,
@@ -429,27 +441,49 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
 const dumpSubmit = (form) => {
   form.validate((valid, fields) => {
     if (valid) {
-      proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
-        proxy.$axios.get('/dump/infos').then(response => {
-          if (response.data.code === 0) {
-            ElMessage({
-              message: '提交成功、请等待砸壳',
-              type: 'success',
+      proxy.$axios.get(`/version/info`, {
+        params: {
+          appid: dump.appid,
+          version: dump.version
+        }
+      }).then(versionResponse => {
+        if (versionResponse.data.data) {
+          ElMessage({
+            message: '您需要砸壳的应用版本已存在，3秒后跳转到下载页面',
+            type: 'warning',
+          })
+          setTimeout(() => {
+            proxy.$router.push({
+              path: `/versions/${dump.appid}`, query: {
+                version: dump.version
+              }
             })
-            dumpList.value = response.data.data
-            dump.appid = ''
-            dump.version = ''
-            dump.token = ''
-            dump.code = ''
-            changeCaptcha()
-          } else {
-            ElMessage({
-              message: response.data.msg,
-              type: 'warning',
+          }, 3000)
+        } else {
+          proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
+            proxy.$axios.get('/dump/infos').then(response => {
+              if (response.data.code === 0) {
+                ElMessage({
+                  message: '提交成功、请等待砸壳',
+                  type: 'success',
+                })
+                dumpList.value = response.data.data
+                dump.appid = ''
+                dump.version = ''
+                dump.token = ''
+                dump.code = ''
+                changeCaptcha()
+              } else {
+                ElMessage({
+                  message: response.data.msg,
+                  type: 'warning',
+                })
+              }
             })
-          }
-        })
+          })
+        }
       })
+
     } else {
       ElMessage({
         message: '请检查参数',
@@ -477,7 +511,11 @@ const getBase64 = (url, callback) => {
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
   if (search.value) {
-    proxy.$axios.get(`/version/search?key=${searchKey.value}`).then(response => {
+    proxy.$axios.get(`/version/search`, {
+      params: {
+        key: searchKey.value
+      }
+    }).then(response => {
       rankLoading.value = false
       searchs.value = response.data.data
       searchLoading.value = false
