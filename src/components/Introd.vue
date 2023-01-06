@@ -1,7 +1,8 @@
 <template>
   <div class="max introd">
     <h1>ipa软件下载</h1>
-    <p>ipadump，提供在线ios应用ipa在线砸壳提取下载</p>
+    <p>ipadump，提供在线IOS官方应用ipa在线砸壳提取下载</p>
+    <p>原生纯净无插件</p>
   </div>
 </template>
 
