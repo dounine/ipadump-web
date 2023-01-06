@@ -44,33 +44,41 @@
                     <span>下载排行榜</span>
                   </div>
                 </template>
-                <div v-if="ranks.length>0" v-for="rank in ranks" :key="rank.appid" class="rank-row"
-                     @click="chooseVersion(rank)">
-                  <div style="display: flex;">
-                    <div
-                        style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
-                      <div>
-                        <img style="width:30px;height:30px;margin-top:14px;"
-                             :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
-                      </div>
-                      <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
-                    </div>
-                    <div style="flex:1;">
-                      <div style="display: flex">
-                        <div
-                            style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
-                          <span style="font-size: 14px">{{ rank.des }}</span>
-                        </div>
+                <div v-if="ranks.length>0">
+                  <div v-for="rank in ranks" :key="rank.appid" class="rank-row"
+                       @click="chooseVersion(rank)">
+                    <div style="display: flex;">
+                      <div
+                          style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
                         <div>
+                          <img style="width:30px;height:30px;margin-top:14px;"
+                               :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
+                        </div>
+                        <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
+                      </div>
+                      <div style="flex:1;">
+                        <div style="display: flex">
+                          <div
+                              style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
+                            <span style="font-size: 14px">{{ rank.des }}</span>
+                          </div>
+                          <div>
                     <span style="font-size: 14px;margin-right:10px;">{{
                         rank.version
                       }} / {{ Common.sizeFormat(rank.size) }}</span>
-                          <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)"
-                                     circle/>
+                            <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)"
+                                       circle/>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+                  <el-pagination
+                      @current-change="rankPageChange"
+                      v-model:current-page="rankCurrentRankPage"
+                      :page-size="10"
+                      :page-count="parseInt(rankTotal/10)"
+                      style="float:right;" layout="prev, pager, next" :total="rankTotal"/>
                 </div>
                 <div v-else>
                   <el-empty :image-size="40" description="没有数据"/>
@@ -101,10 +109,10 @@
                         </div>
                         <div>
                     <span style="font-size: 14px;margin-right:10px;color:#409eff;font-weight: 500;">
-                      {{rank.versionCount}}个版本可下载
-<!--                      {{-->
-<!--                        rank.version-->
-<!--                      }} / {{ Common.sizeFormat(rank.size) }}-->
+                      {{ rank.versionCount }}个版本可下载
+                      <!--                      {{-->
+                      <!--                        rank.version-->
+                      <!--                      }} / {{ Common.sizeFormat(rank.size) }}-->
                     </span>
                           <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)"
                                      circle/>
@@ -159,6 +167,12 @@
                     </div>
                   </div>
                 </div>
+                <el-pagination
+                    @current-change="dumpPageChange"
+                    v-model:current-page="dumpCurrentRankPage"
+                    :page-size="10"
+                    :page-count="parseInt(dumpTotal/10)"
+                    style="float:right;" layout="prev, pager, next" :total="dumpTotal"/>
               </el-card>
             </el-tab-pane>
             <el-tab-pane label="软件源" name="store">
@@ -256,6 +270,10 @@ const dumpRules = reactive({
 })
 const dumpList = ref([])
 const ranks = ref([])
+const rankCurrentRankPage = ref(1)
+const rankTotal = ref(0)
+const dumpCurrentRankPage = ref(1)
+const dumpTotal = ref(0)
 const captchaLoading = ref(false)
 const captchaRef = ref()
 const searchs = ref([])
@@ -274,18 +292,44 @@ const changeCaptcha = () => {
     captchaLoading.value = false
   })
 }
+const rankPageChange = (offset) => {
+  rankLoading.value = true
+  proxy.$axios.get('/version/ranks', {
+    params: {
+      offset: (offset - 1) * 10,
+      limit: 10
+    }
+  }).then(response => {
+    ranks.value = response.data.data.list
+    rankTotal.value = response.data.data.total
+    rankLoading.value = false
+  })
+}
+const dumpPageChange = (offset) => {
+  proxy.$axios.get('/dump/infos', {
+    params: {
+      offset: (offset - 1) * 10,
+      limit: 10
+    }
+  }).then(response => {
+    dumpList.value = response.data.data.list
+    dumpTotal.value = response.data.data.total
+  })
+}
 const tabClick = (tab) => {
   let tabName = tab.props.name
   if (tabName === 'download') {
     rankLoading.value = true
     proxy.$axios.get('/version/ranks').then(response => {
-      ranks.value = response.data.data
+      ranks.value = response.data.data.list
+      rankTotal.value = response.data.data.total
       rankLoading.value = false
     })
   } else if (tabName === 'dump') {
     changeCaptcha()
     proxy.$axios.get('/dump/infos').then(response => {
-      dumpList.value = response.data.data
+      dumpList.value = response.data.data.list
+      dumpTotal.value = response.data.data.total
     })
   }
 }
@@ -331,12 +375,6 @@ const dumpClick = (du) => {
 }
 const chooseVersion = (rank) => {
   proxy.$router.push(`/versions/${rank.appid}`)
-}
-const noSearch = () => {
-  search.value = false
-  proxy.$axios.get('/version/ranks').then(response => {
-    ranks.value = response.data.data
-  })
 }
 const searchFun = () => {
   search.value = true
@@ -427,7 +465,8 @@ onBeforeMount(() => {
     })
   } else {
     proxy.$axios.get('/version/ranks').then(response => {
-      ranks.value = response.data.data
+      ranks.value = response.data.data.list
+      rankTotal.value = response.data.data.total
       rankLoading.value = false
     })
   }

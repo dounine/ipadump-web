@@ -40,6 +40,12 @@
                   </div>
                 </div>
               </div>
+              <el-pagination
+                  @current-change="pageChange"
+                  v-model:current-page="currentRankPage"
+                  :page-size="10"
+                  :page-count="parseInt(app.total/10)"
+                  style="float:right;" layout="prev, pager, next" :total="app.total"/>
             </div>
             <div v-else>
               <el-empty :image-size="100" description="没有数据"/>
@@ -69,18 +75,42 @@ const app = ref({
   info: {
     name: ''
   },
-  versions: []
+  versions: [],
+  total: 0
 })
-const hh = ref('')
 const version = ref([])
+const currentRankPage = ref(1)
 const {proxy} = getCurrentInstance()
 let appid = proxy.$route.params["appid"]
 const downloadFun = (version) => {
   window.location.href = version.file
 }
+const pageChange = (offset) => {
+  proxy.$axios.get(`/version/infos/${appid}`, {
+    params: {
+      offset: (offset - 1) * 10,
+      limit: 10
+    }
+  }).then(response => {
+    app.value = response.data.data
+  })
+  proxy.$axios.get('/version/ranks', {
+    params: {
+      offset: (offset - 1) * 10,
+      limit: 10
+    }
+  }).then(response => {
+    app.value = response.data.data
+  })
+}
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
-  proxy.$axios.get(`/version/infos/${appid}`).then(response => {
+  proxy.$axios.get(`/version/infos/${appid}`, {
+    params: {
+      offset: 0,
+      limit: 10
+    }
+  }).then(response => {
     app.value = response.data.data
   })
 })
