@@ -8,7 +8,12 @@ const qiniuData = require('./.qiniu.json')
 
 const key = qiniuData.key
 const token = qiniuData.token
-
+const config = {
+    ak: key,
+    sk: token,
+    scope: 'ipadump',
+    zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
+}
 
 // 文件读取方法
 const readFileList = (dir, filesList = []) => {
@@ -33,18 +38,13 @@ gulp.task('clean', cb => {
 });
 
 async function ossUpload(path) {
-    console.log('upload', path, `${path.substring("dist/".length)}`)
-    await upload({
-        ak: key,
-        sk: token,
-        scope: 'ipadump',
-        zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
-    }, path, `${path.substring("dist/".length)}`)
+    await upload(config, path, `${path.substring("dist/".length)}`)
     console.log('upload success ', path, 'https://ipadump.com/' + `${path.substring("dist/".length)}`)
+    await refresh(config, [`https://ipadump.com/${path}`])
 }
 
 // 替换SDK内的变量
-gulp.task('replacePath', () => {
+gulp.task('replacePath', async () => {
     return gulp.src('./dist/index.html')
         .pipe(replace("/assets", `/assets`))
         // .pipe(replace("favicon.ico", `${pathPre}/favicon.ico`))
@@ -55,44 +55,18 @@ gulp.task('replacePath', () => {
 gulp.task('uploadResource', async cb => {
     let filesList = [];
     readFileList('./dist', filesList);
-    return Promise.all(filesList.map(info => {
+    await Promise.all(filesList.map(info => {
         return ossUpload(info.fullPath);
     }));
+    return await refresh(config, [`https://ipadump.com`])
 });
 gulp.task('uploadStaticResource', async cb => {
     let filesList = [];
     readFileList('./src/assets/static/', filesList);
     return Promise.all(filesList.map(async info => {
-        await upload({
-            ak: key,
-            sk: token,
-            scope: 'ipadump',
-            zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
-        }, info.fullPath, `static/${info.fullPath.substring("src/assets/static/".length)}`)
+        await upload(config, info.fullPath, `static/${info.fullPath.substring("src/assets/static/".length)}`)
     }));
 })
-gulp.task('uploadCat', async cb => {
-    await upload({
-        ak: key,
-        sk: token,
-        scope: 'ipadump',
-        zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
-    }, 'src/assets/pet.html', `pet/pet.html`)
-    return new Promise(function (resolve, reject) {
-        resolve();
-    })
-});
-gulp.task('uploadDog', async cb => {
-    await upload({
-        ak: key,
-        sk: token,
-        scope: 'ipadump',
-        zone: 'qiniu.zone.Zone_z2', // 七牛空间（默认Zone_z1）
-    }, 'src/assets/dog.html', `pet/dog.html`)
-    return new Promise(function (resolve, reject) {
-        resolve();
-    })
-});
 // 上传
 gulp.task('upload', gulp.series(['replacePath', 'uploadStaticResource', 'uploadResource']));
 
