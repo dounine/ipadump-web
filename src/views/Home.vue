@@ -100,9 +100,12 @@
                           <span style="font-size: 14px">{{ rank.des }}</span>
                         </div>
                         <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{
-                        rank.version
-                      }} / {{ Common.sizeFormat(rank.size) }}</span>
+                    <span style="font-size: 14px;margin-right:10px;color:#409eff;font-weight: 500;">
+                      {{rank.versionCount}}个版本可下载
+<!--                      {{-->
+<!--                        rank.version-->
+<!--                      }} / {{ Common.sizeFormat(rank.size) }}-->
+                    </span>
                           <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)"
                                      circle/>
                         </div>
@@ -136,7 +139,7 @@
                     <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
                       提交在线砸壳
                     </el-button>
-                    <p style="margin-left:20px;color:#999999;">当前平均ipa砸壳时间为30分钟</p>
+                    <p style="margin-left:20px;color:#999999;">当前平均ipa平均砸壳时间为30分钟</p>
                   </el-form-item>
                 </el-form>
               </el-card>
