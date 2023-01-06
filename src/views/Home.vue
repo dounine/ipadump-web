@@ -506,6 +506,7 @@ const dumpSubmit = (form) => {
                 dump.version = ''
                 dump.token = ''
                 dump.code = ''
+                dump.mail = ''
                 changeCaptcha()
               } else {
                 ElMessage({
