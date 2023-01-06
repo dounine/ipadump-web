@@ -158,12 +158,15 @@
                   </div>
                 </template>
                 <div v-for="du in dumpList" :key="du.appid" class="rank-row">
-                  <div style="display: flex;" @click="dumpClick(du)">
-                    <div style="flex:1;margin-left:10px;font-weight: 500;">{{ du.appid }}</div>
-                    <div style="font-size: 14px;margin-right:10px;">{{
-                        du.version
-                      }} / {{ du.count }} / <strong
-                          :style="{color:dumpStatusColor(du.status)}">{{ dumpStatusFormat(du.status) }}</strong>
+                  <div class="dumpBox" @click="dumpClick(du)">
+                    <div class="dumpAppid">{{ du.appid }}</div>
+                    <div class="dumpTime">
+                      {{
+                        timeFormat(new Date(du.time), 'M-D h:m:s')
+                      }}
+                    </div>
+                    <div class="dumpVersion">{{ du.version }} / <strong
+                        :style="{color:dumpStatusColor(du.status)}">{{ dumpStatusFormat(du.status) }}</strong>
                     </div>
                   </div>
                 </div>
@@ -291,6 +294,22 @@ const changeCaptcha = () => {
     that.refs.captchaRef.src = URL.createObjectURL(response.data);
     captchaLoading.value = false
   })
+}
+const timeFormat = (time, format = "Y-M-D h:m:s") => {
+  const formatNumber = n => `0${n}`.slice(-2);
+  const date = new Date(time);
+  const formatList = ["Y", "M", "D", "h", "m", "s"];
+  const resultList = [];
+  resultList.push(date.getFullYear().toString());
+  resultList.push(formatNumber(date.getMonth() + 1));
+  resultList.push(formatNumber(date.getDate()));
+  resultList.push(formatNumber(date.getHours()));
+  resultList.push(formatNumber(date.getMinutes()));
+  resultList.push(formatNumber(date.getSeconds()));
+  for (let i = 0; i < resultList.length; i++) {
+    format = format.replace(formatList[i], resultList[i]);
+  }
+  return format;
 }
 const rankPageChange = (offset) => {
   rankLoading.value = true
@@ -532,4 +551,24 @@ onBeforeMount(() => {
   }
 }
 
+.dumpBox {
+  display: flex;
+
+  .dumpAppid {
+    margin-left: 10px;
+    font-weight: 500;
+  }
+
+  .dumpTime {
+    flex-grow: 1;
+    text-align: center;
+    font-size: 14px;
+    color: #888888;
+  }
+
+  .dumpVersion {
+    font-size: 14px;
+    margin-right: 10px;
+  }
+}
 </style>

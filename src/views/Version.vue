@@ -16,26 +16,28 @@
                 </el-breadcrumb>
               </div>
             </template>
-            <div v-if="app.versions.length>0" v-for="version in app.versions" :key="version.name" class="rank-row">
-              <div style="display: flex;">
-                <div
-                    style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
-                  <div>
-                    <img style="width:30px;height:30px;margin-top:14px;" :src="app.info.icon"/>
-                  </div>
-                  <div style="margin-left:10px;font-weight: 500;">{{ app.info.name }}</div>
-                </div>
-                <div style="flex:1;">
-                  <div style="display: flex">
-                    <div
-                        style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
-                      <span style="font-size: 14px">{{ version.des }}</span>
-                    </div>
+            <div v-if="app.versions.length>0">
+              <div v-for="version in app.versions" :key="version.name" class="rank-row">
+                <div style="display: flex;">
+                  <div
+                      style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
                     <div>
+                      <img style="width:30px;height:30px;margin-top:14px;" :src="app.info.icon"/>
+                    </div>
+                    <div style="margin-left:10px;font-weight: 500;">{{ app.info.name }}</div>
+                  </div>
+                  <div style="flex:1;">
+                    <div style="display: flex">
+                      <div
+                          style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
+                        <span style="font-size: 14px">{{ version.des }}</span>
+                      </div>
+                      <div>
                     <span style="font-size: 14px;margin-right:10px;">{{
                         version.name
                       }} / {{ Common.sizeFormat(version.size) }}</span>
-                      <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
+                        <el-button type="primary" @click="downloadFun(version)" size="small" :icon="Download" circle/>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -46,6 +48,7 @@
                   :page-size="10"
                   :page-count="parseInt(app.total/10)"
                   style="float:right;" layout="prev, pager, next" :total="app.total"/>
+
             </div>
             <div v-else>
               <el-empty :image-size="100" description="没有数据"/>
