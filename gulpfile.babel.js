@@ -37,10 +37,13 @@ gulp.task('clean', cb => {
     cb();
 });
 
-async function ossUpload(path) {
-    await upload(config, path, `${path.substring("dist/".length)}`)
-    console.log('upload success ', path, 'https://ipadump.com/' + `${path.substring("dist/".length)}`)
-    await refresh(config, [`https://ipadump.com/${path}`])
+async function ossUpload(p) {
+    let uploadPath = p.substring(5).replaceAll('\\', '/')
+    let accessPath = 'https://ipadump.com/' + uploadPath
+    await upload(config, p, uploadPath)
+    console.log('upload success ', p, accessPath)
+    await refresh(config, [accessPath])
+    console.log('refresh success ', accessPath)
 }
 
 // 替换SDK内的变量
@@ -64,7 +67,7 @@ gulp.task('uploadStaticResource', async cb => {
     let filesList = [];
     readFileList('./src/assets/static/', filesList);
     return Promise.all(filesList.map(async info => {
-        await upload(config, info.fullPath, `static/${info.fullPath.substring("src/assets/static/".length)}`)
+        await upload(config, info.fullPath, `static/${info.fullPath.replaceAll('\\','/').substring("src/assets/static/".length)}`)
     }));
 })
 // 上传

@@ -145,7 +145,7 @@
                        style="text-decoration: none;color:#9cf;margin-left:20px;">换一换</a>
                   </el-form-item>
                   <el-form-item label="验证码" prop="code">
-                    <el-input v-model="dump.code" maxlength="20" placeholder="请输入验证码"/>
+                    <el-input v-model="dump.code" maxlength="20" placeholder="请输入验证码，区分大小写"/>
                   </el-form-item>
                   <el-form-item>
                     <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
