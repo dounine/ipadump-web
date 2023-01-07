@@ -10,11 +10,14 @@
           <el-card v-loading="loading">
             <template #header>
               <div class="card-header">
-                <el-breadcrumb :separator-icon="ArrowRight">
-                  <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-                  <el-breadcrumb-item>{{ app.info.name }}历史版本</el-breadcrumb-item>
-                </el-breadcrumb>
+                <span>{{ app.info.name }}版本列表</span>
               </div>
+              <!--              <div class="card-header">-->
+              <!--                <el-breadcrumb :separator-icon="ArrowRight">-->
+              <!--                  <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>-->
+              <!--                  <el-breadcrumb-item>{{ app.info.name }}历史版本</el-breadcrumb-item>-->
+              <!--                </el-breadcrumb>-->
+              <!--              </div>-->
             </template>
             <div v-if="app.versions.length>0">
               <div v-for="v in app.versions" :key="v.name"
@@ -102,9 +105,24 @@ const pageChange = (offset) => {
     app.value = response.data.data
   })
 }
+const access = () => {
+  let count = localStorage.getItem('access')
+  if (count == undefined) {
+    localStorage.setItem('access', '1')
+  }
+  proxy.$axios.get(`/user/access`, {
+    params: {
+      count,
+      tag: localStorage.getItem('tag') || ''
+    }
+  }).then(res => {
+    console.log('access', res.data)
+  })
+}
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
   pageChange(1)
+  access()
 })
 </script>
 

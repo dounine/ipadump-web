@@ -185,7 +185,7 @@
             <el-tab-pane label="软件源" name="store">
               <div class="storeTxt">
                 <span>支持：`轻松签`、`全能签`</span>
-                <span style="display: block;">说明：直接在软件源上添加即可使用</span>
+                <span style="display: block;">说明：复制在软件源上添加即可使用</span>
               </div>
               <div class="store">
                 <div class="left">https://store.ipadump.com</div>
@@ -543,8 +543,23 @@ const getBase64 = (url, callback) => {
     return callback ? callback(dataURL) : null;
   };
 }
+const access = () => {
+  let count = localStorage.getItem('access')
+  if (count == undefined) {
+    localStorage.setItem('access', '1')
+  }
+  proxy.$axios.get(`/user/access`, {
+    params: {
+      count,
+      tag: localStorage.getItem('tag') || ''
+    }
+  }).then(res => {
+    console.log('access', res.data)
+  })
+}
 onBeforeMount(() => {
   document.getElementById("loading").style = "display:none";
+  access()
   if (search.value) {
     proxy.$axios.get(`/version/search`, {
       params: {
