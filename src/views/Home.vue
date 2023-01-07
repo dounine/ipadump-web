@@ -544,16 +544,14 @@ const getBase64 = (url, callback) => {
   };
 }
 const access = () => {
-  let count = localStorage.getItem('access')
-  if (count == undefined) {
-    localStorage.setItem('access', '1')
-  }
+  let count = localStorage.getItem('access') || '1'
   proxy.$axios.get(`/user/access`, {
     params: {
       count,
       tag: localStorage.getItem('tag') || ''
     }
   }).then(res => {
+    localStorage.setItem('access', (parseInt(count) + 1) + '')
     console.log('access', res.data)
   })
 }
