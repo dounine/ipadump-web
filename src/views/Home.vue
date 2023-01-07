@@ -17,13 +17,13 @@
               maxlength="20"
               class="input-with-select"
           >
-            <template #prepend>
-              <el-select size="large" v-model="position" placeholder="Select" style="width: 115px">
-                <el-option label="中国区" value="cn"/>
-                <el-option label="香港区" disabled value="hk"/>
-                <el-option label="美国区" disabled value="us"/>
-              </el-select>
-            </template>
+<!--            <template #prepend>-->
+<!--              <el-select size="large" v-model="position" placeholder="Select" style="width: 115px">-->
+<!--                <el-option label="中国区" value="cn"/>-->
+<!--                <el-option label="香港区" disabled value="hk"/>-->
+<!--                <el-option label="美国区" disabled value="us"/>-->
+<!--              </el-select>-->
+<!--            </template>-->
             <template #default="{ item }">
               <div class="searchItem">
                 <img style="width:30px;height:30px;" :src="item.icon"/>

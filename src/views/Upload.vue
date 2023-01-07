@@ -106,7 +106,7 @@
           <el-form-item label="文件地址">
             <a :href="formData.versionFile">{{ formData.versionFile }}</a>
           </el-form-item>
-          <el-form-item label="版本描述" prop="versionDes">
+          <el-form-item label="版本描述">
             <el-input v-model="formData.versionDes" type="textarea"/>
           </el-form-item>
           <el-form-item>
@@ -255,20 +255,20 @@ const rules = reactive({
     },
     trigger: 'change'
   }],
-  versionDes: [{
-    validator: (rule, value, callback) => {
-      if (formData.appVnames[0] !== '' && formData.appVnames[0]) {
-        if (!value) {
-          callback(new Error('请输入版本描述'))
-        } else {
-          callback()
-        }
-      } else {
-        callback()
-      }
-    },
-    trigger: 'change'
-  }]
+  // versionDes: [{
+  //   validator: (rule, value, callback) => {
+  //     if (formData.appVnames[0] !== '' && formData.appVnames[0]) {
+  //       if (!value) {
+  //         callback(new Error('请输入版本描述'))
+  //       } else {
+  //         callback()
+  //       }
+  //     } else {
+  //       callback()
+  //     }
+  //   },
+  //   trigger: 'change'
+  // }]
 })
 const formData = reactive({
   appName: '',
