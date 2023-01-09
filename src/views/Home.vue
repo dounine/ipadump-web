@@ -17,13 +17,13 @@
               maxlength="20"
               class="input-with-select"
           >
-<!--            <template #prepend>-->
-<!--              <el-select size="large" v-model="position" placeholder="Select" style="width: 115px">-->
-<!--                <el-option label="中国区" value="cn"/>-->
-<!--                <el-option label="香港区" disabled value="hk"/>-->
-<!--                <el-option label="美国区" disabled value="us"/>-->
-<!--              </el-select>-->
-<!--            </template>-->
+            <!--            <template #prepend>-->
+            <!--              <el-select size="large" v-model="position" placeholder="Select" style="width: 115px">-->
+            <!--                <el-option label="中国区" value="cn"/>-->
+            <!--                <el-option label="香港区" disabled value="hk"/>-->
+            <!--                <el-option label="美国区" disabled value="us"/>-->
+            <!--              </el-select>-->
+            <!--            </template>-->
             <template #default="{ item }">
               <div class="searchItem">
                 <img style="width:30px;height:30px;" :src="item.icon"/>
@@ -134,7 +134,14 @@
                     <el-input v-model="dump.appid" maxlength="20" placeholder="请输入应用名称"/>
                   </el-form-item>
                   <el-form-item label="版本号" prop="version">
-                    <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号，例如：10.1.1"/>
+                    <el-tooltip
+                        class="box-item"
+                        effect="dark"
+                        content="旧版本不一定可以砸，建议提交在AppStore上的最新版本"
+                        placement="top"
+                    >
+                      <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号，例如：10.1.1"/>
+                    </el-tooltip>
                   </el-form-item>
                   <el-form-item label="通知邮箱" prop="mail">
                     <el-input v-model="dump.mail" maxlength="20" placeholder="请输入接收通知的邮箱"/>
@@ -169,9 +176,19 @@
                         timeFormat(new Date(du.time), 'M-D h:m:s')
                       }}
                     </div>
-                    <div class="dumpVersion">{{ du.version }} / <strong
-                        :style="{color:dumpStatusColor(du.status)}">{{ dumpStatusFormat(du.status) }}</strong>
-                    </div>
+                    <el-tooltip
+                        class="box-item"
+                        effect="dark"
+                        :content="du.format.content"
+                        placement="top"
+                    >
+                      <div class="dumpVersion">
+                        {{ du.version }} / <strong
+                          :style="{color:du.format.color}">{{
+                          du.format.text
+                        }}</strong>
+                      </div>
+                    </el-tooltip>
                   </div>
                 </div>
                 <el-pagination
@@ -222,8 +239,7 @@ import {getCurrentInstance, onBeforeMount, ref, reactive, nextTick} from 'vue';
 import {
   ArrowRightBold,
   Search,
-  ArrowRight,
-  DocumentCopy
+  DocumentCopy,
 } from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
 
@@ -357,7 +373,12 @@ const dumpPageChange = (offset) => {
       limit: 10
     }
   }).then(response => {
-    dumpList.value = response.data.data.list
+    dumpList.value = response.data.data.list.map(item => {
+      return {
+        ...item,
+        format: dumpStatusFormat(item.status)
+      }
+    })
     dumpTotal.value = response.data.data.total
   })
 }
@@ -373,7 +394,12 @@ const tabClick = (tab) => {
   } else if (tabName === 'dump') {
     changeCaptcha()
     proxy.$axios.get('/dump/infos').then(response => {
-      dumpList.value = response.data.data.list
+      dumpList.value = response.data.data.list.map(item => {
+        return {
+          ...item,
+          format: dumpStatusFormat(item.status)
+        }
+      })
       dumpTotal.value = response.data.data.total
     })
   }
@@ -390,27 +416,55 @@ const storeCopy = (type) => {
     type: 'success',
   })
 }
-const dumpStatusColor = (status) => {
-  if (status === 1) {
-    return 'green'
-  } else if (status === 2) {
-    return '#ccc'
-  } else if (status === 3) {
-    return 'red'
-  }
-  return 'black'
-}
 const dumpStatusFormat = (status) => {
   if (status === 0) {
-    return '处理中'
+    return {
+      text: '处理中',
+      content: '砸壳已经提交，请等待',
+      color: 'black'
+    }
   } else if (status === 1) {
-    return '砸壳中'
+    return {
+      text: '砸壳中',
+      content: '正在砸壳与上传',
+      color: 'green'
+    }
   } else if (status === 2) {
-    return '完成'
+    return {
+      text: '完成',
+      content: '砸壳已经完成，点击即可下载',
+      color: '#ccc'
+    }
   } else if (status === 3) {
-    return '不可砸'
+    return {
+      text: '不可砸',
+      content: '程序无法砸壳',
+      color: 'red'
+    }
+  } else if (status === 4) {
+    return {
+      text: '越狱屏蔽',
+      content: '此程序有越狱环境检测，无法砸壳',
+      color: 'red'
+    }
+  } else if (status === 5) {
+    return {
+      text: '国区不存在',
+      content: '此应用在国区内无法搜索到，请检查',
+      color: 'red'
+    }
+  } else if (status === 6) {
+    return {
+      text: '版本过旧',
+      content: '请提交最新版本，旧版本不一定都可以砸',
+      color: 'red'
+    }
   }
-  return '未知'
+  return {
+    text: '错误',
+    content: '请进群联系管理员',
+    color: 'red'
+  }
 }
 const dumpClick = (du) => {
   if (du.status === 2) {
@@ -501,7 +555,12 @@ const dumpSubmit = (form) => {
                   message: '提交成功、请等待砸壳',
                   type: 'success',
                 })
-                dumpList.value = response.data.data
+                dumpList.value = response.data.data.map(item => {
+                  return {
+                    ...item,
+                    format: dumpStatusFormat(item.status)
+                  }
+                })
                 dump.appid = ''
                 dump.version = ''
                 dump.token = ''

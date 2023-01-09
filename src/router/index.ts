@@ -1,6 +1,5 @@
 import {createRouter, createWebHashHistory, RouteRecordRaw} from "vue-router";
 import Home from "../views/Home.vue";
-import Upload from "../views/Upload.vue";
 import Version from "../views/Version.vue";
 
 const routes: RouteRecordRaw[] = [
@@ -16,11 +15,6 @@ const routes: RouteRecordRaw[] = [
         path: '/search/:searchKey?',
         name: 'Home',
         component: Home
-    },
-    {
-        path: '/upload/:appid?',
-        name: 'Upload',
-        component: Upload
     },
     {
         path: '/versions/:appid',

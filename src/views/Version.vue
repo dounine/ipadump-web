@@ -10,7 +10,8 @@
           <el-card v-loading="loading">
             <template #header>
               <div class="card-header">
-                <span>{{ app.info.name }}版本列表</span>
+                <span>{{ app.info.name }} 版本列表</span> >
+                <span style="color:#888888;">{{ app.info.des }}</span>
               </div>
               <!--              <div class="card-header">-->
               <!--                <el-breadcrumb :separator-icon="ArrowRight">-->
