@@ -1,9 +1,7 @@
 <template>
   <el-container>
-    <el-header height="80">
-      <Header/>
-    </el-header>
-    <el-main>
+    <Header/>
+    <el-main style="padding: 4px;">
       <div class="max">
         <Introd/>
         <div class="searchBox">
@@ -47,28 +45,49 @@
                 <div v-if="ranks.length>0">
                   <div v-for="rank in ranks" :key="rank.appid" class="rank-row"
                        @click="chooseVersion(rank)">
-                    <div style="display: flex;">
-                      <div
-                          style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
-                        <div>
-                          <img style="width:30px;height:30px;margin-top:14px;"
-                               :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
-                        </div>
-                        <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
+                    <div
+                        style="display: flex;">
+                      <div style="display: flex;align-items:center;">
+                        <img style="width:30px;height:30px;border-radius: 4px;"
+                             :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
                       </div>
-                      <div style="flex:1;">
-                        <div style="display: flex">
-                          <div
-                              style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-align: center;">
-                            <span style="font-size: 14px">{{ rank.des }}</span>
-                          </div>
-                          <div>
-                    <span style="font-size: 14px;margin-right:10px;">{{
+                      <div
+                          style="text-indent: 6px;white-space: nowrap;font-weight: 500;display: flex;align-items:center;">
+                        {{ rank.name }}
+                        <svg v-if="rank.official" t="1673316022939" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" p-id="6685" width="16" height="16">
+                          <path
+                              d="M512 63.2L160.8 226.4v244.8c0 226.4 149.6 437.6 351.2 489.6 201.6-51.2 351.2-263.2 351.2-489.6V226.4L512 63.2z m-8 574.4l-45.6 45.6-45.6-45.6-90.4-90.4 45.6-45.6L458.4 592l204-204 45.6 45.6L504 637.6z"
+                              p-id="6686" fill="#1afa29"></path>
+                        </svg>
+                        <svg v-else t="1673321595392" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" p-id="9487" width="16" height="16">
+                          <path
+                              d="M865.004 167.069c-10.794-9.687-24.91-15.085-39.579-15.085-1.383 0-2.629 0-4.013 0.139-0.831 0.139-10.102 0.692-24.771 0.692-24.218 0-71.408-1.522-116.107-12.178-57.708-13.7-124.411-77.083-143.785-89.675-9.687-6.227-21.034-9.41-32.244-9.41-11.21 0-22.42 3.182-32.244 9.41-2.353 1.522-72.1 73.484-140.324 89.675-44.699 10.655-92.72 12.178-116.938 12.178-14.53 0-23.941-0.554-24.771-0.692-1.246-0.139-2.629-0.139-3.875-0.139-14.67 0-28.924 5.396-39.717 15.085-11.763 10.655-18.405 25.325-18.405 40.825v140.048c0 517.846 351.089 584.411 366.034 587.040 3.46 0.554 6.782 0.831 10.241 0.831 3.46 0 6.918-0.276 10.241-0.831 14.946-2.629 368.663-69.33 368.663-587.040v-139.911c0.139-15.5-6.642-30.446-18.405-40.962v0zM825.425 348.080c0 476.883-320.783 531.961-320.783 531.961s-318.291-55.078-318.291-531.961v-140.048c0 0 10.933 0.831 28.785 0.831 30.446 0 81.648-2.214 130.777-13.839 80.403-19.098 158.731-97.564 158.731-97.564s81.787 78.466 162.19 97.564c49.129 11.625 99.501 13.839 129.946 13.839 17.714 0 28.785-0.831 28.785-0.831l-0.139 140.048zM463.405 491.173z"
+                              p-id="9488" fill="#9cf"></path>
+                          <path
+                              d="M349.925 603.958l66.841-15.085c10.102 54.663 40.962 81.925 92.72 81.925 57.43-1.383 87.045-29.476 88.429-84.14 0-50.373-35.289-75.421-105.728-75.421-17.299 0-30.998 0-40.962 0v-51.757c10.102 0 20.757 0 32.382 0 66.149 0 99.916-25.187 101.3-75.421-1.383-45.945-26.571-69.747-75.421-71.132-48.85 0-77.635 26.571-86.215 79.85l-64.766-15.085c18.683-76.252 70.438-114.308 155.27-114.308 87.738 2.906 134.373 40.962 140.187 114.308-1.383 53.279-30.998 87.738-88.429 103.514 63.244 13.008 97.009 49.542 101.3 110.019-4.29 81.925-56.878 124.411-157.486 127.316-87.461 1.246-140.739-36.811-159.422-114.585z"
+                              p-id="9489" fill="#9cf"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                      <div style="display: flex">
+                        <div style="flex: 1;text-align: center;">
+                            <span
+                                style="font-size: 14px;">{{
+                                rank.des
+                              }}</span>
+                        </div>
+                        <div>
+                    <span style="font-size: 14px;">{{
                         rank.version
                       }} / {{ Common.sizeFormat(rank.size) }}</span>
-                            <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)"
-                                       circle/>
-                          </div>
+                        </div>
+                        <div style="display: flex;align-items:center;justify-content: center;">
+                          <el-icon color="#cccccc">
+                            <ArrowRightBold/>
+                          </el-icon>
                         </div>
                       </div>
                     </div>
@@ -94,30 +113,34 @@
                 </template>
                 <div v-if="searchs.length>0" v-for="rank in searchs" :key="rank.appid" class="rank-row"
                      @click="chooseVersion(rank)">
-                  <div style="display: flex;">
-                    <div
-                        style="display: flex;flex-direction: row;min-width: 80px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
-                      <div>
-                        <img style="width:30px;height:30px;margin-top:14px;" :src="rank.icon"/>
-                      </div>
-                      <div style="margin-left:10px;font-weight: 500;">{{ rank.name }}</div>
+                  <div
+                      style="display: flex;">
+                    <div style="display: flex;align-items:center;">
+                      <img style="width:30px;height:30px;border-radius: 4px;"
+                           :src="rank.icon || 'https://ipadump.com/static/image/ipa.png'"/>
                     </div>
-                    <div style="flex:1;">
-                      <div style="display: flex;flex-grow: 1;text-align: center;">
-                        <div
-                            style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 190px;text-indent: 10px">
-                          <span style="font-size: 14px">{{ rank.des }}</span>
-                        </div>
-                        <div>
-                    <span style="font-size: 14px;margin-right:10px;color:#409eff;font-weight: 500;">
-                      {{ rank.versionCount }}个版本可下载
-                      <!--                      {{-->
-                      <!--                        rank.version-->
-                      <!--                      }} / {{ Common.sizeFormat(rank.size) }}-->
-                    </span>
-                          <el-button type="primary" size="small" :icon="ArrowRightBold" @click="chooseVersion(rank)"
-                                     circle/>
-                        </div>
+                    <div
+                        style="text-indent: 6px;white-space: nowrap;font-weight: 500;display: flex;align-items:center;">
+                      {{ rank.name }}
+                    </div>
+                  </div>
+                  <div style="flex: 1;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                    <div style="display: flex">
+                      <div style="flex: 1;text-align: center;">
+                            <span
+                                style="font-size: 14px;">{{
+                                rank.des
+                              }}</span>
+                      </div>
+                      <div>
+                        <span style="font-size: 14px;color:#409eff;font-weight: 500;">{{
+                            rank.versionCount
+                          }}个版本可下载</span>
+                      </div>
+                      <div style="display: flex;align-items:center;justify-content: center;">
+                        <el-icon color="#cccccc">
+                          <ArrowRightBold/>
+                        </el-icon>
                       </div>
                     </div>
                   </div>
@@ -129,19 +152,33 @@
             </el-tab-pane>
             <el-tab-pane label="在线砸壳" name="dump">
               <el-card>
-                <el-form status-icon ref="ruleFormRef" :model="dump" :rules="dumpRules" label-width="120px">
+                <el-form status-icon ref="ruleFormRef" :model="dump" :rules="dumpRules" label-width="90px">
                   <el-form-item label="应用名称" prop="appid">
                     <el-input v-model="dump.appid" maxlength="20" placeholder="请输入应用名称"/>
                   </el-form-item>
                   <el-form-item label="版本号" prop="version">
-                    <el-tooltip
-                        class="box-item"
-                        effect="dark"
-                        content="旧版本不一定可以砸，建议提交在AppStore上的最新版本"
-                        placement="top"
-                    >
-                      <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号，例如：10.1.1"/>
-                    </el-tooltip>
+                    <div style="display: flex;width: 100%;">
+                      <el-switch
+                          v-model="latestVersion"
+                          @change="latestVersionChange"
+                          class="ml-2"
+                          inline-prompt
+                          width="80"
+                          style="--el-switch-on-color: #13ce66; --el-switch-off-color: #9cf"
+                          active-text="最新版本"
+                          inactive-text="指定版本"
+                      />
+                      <div v-if="!latestVersion" style="margin-left:10px;width:100%;">
+                        <el-tooltip
+                            class="box-item"
+                            effect="dark"
+                            content="旧版本不一定可以砸，建议提交最新版本"
+                            placement="top"
+                        >
+                          <el-input v-model="dump.version" maxlength="20" placeholder="请输入版本号，例如：10.1.1"/>
+                        </el-tooltip>
+                      </div>
+                    </div>
                   </el-form-item>
                   <el-form-item label="通知邮箱" prop="mail">
                     <el-input v-model="dump.mail" maxlength="20" placeholder="请输入接收通知的邮箱"/>
@@ -155,10 +192,19 @@
                     <el-input v-model="dump.code" maxlength="20" placeholder="请输入验证码，区分大小写"/>
                   </el-form-item>
                   <el-form-item>
+                    <div style="display: flex;align-items: center;">
+                      <el-icon color="#9cf">
+                        <InfoFilled/>
+                      </el-icon>
+                      <p style="color:#999999;margin-left: 4px;">
+                        当前平均ipa平均砸壳时间为30分钟
+                      </p>
+                    </div>
+                  </el-form-item>
+                  <el-form-item>
                     <el-button type="primary" @click="dumpSubmit(ruleFormRef)">
                       提交在线砸壳
                     </el-button>
-                    <p style="margin-left:20px;color:#999999;">当前平均ipa平均砸壳时间为30分钟</p>
                   </el-form-item>
                 </el-form>
               </el-card>
@@ -168,9 +214,12 @@
                     <span>当前砸壳应用</span>
                   </div>
                 </template>
-                <div v-for="du in dumpList" :key="du.appid" class="rank-row">
-                  <div class="dumpBox" @click="dumpClick(du)">
-                    <div class="dumpAppid">{{ du.appid }}</div>
+                <div v-for="du in dumpList" @click="dumpClick(du)" :key="du.appid" class="rank-row">
+                  <div class="dumpAppid">
+                    {{ du.appid }}
+                  </div>
+                  <div
+                      style="flex: 1;display: flex;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;justify-content: center;">
                     <div class="dumpTime">
                       {{
                         timeFormat(new Date(du.time), 'M-D h:m:s')
@@ -240,6 +289,7 @@ import {
   ArrowRightBold,
   Search,
   DocumentCopy,
+  InfoFilled,
 } from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
 
@@ -249,6 +299,23 @@ const position = ref('cn')
 const rankLoading = ref(true)
 const searchLoading = ref(false)
 const ruleFormRef = ref()
+const latestVersion = ref(true)
+const dumpList = ref([])
+const ranks = ref([])
+const rankCurrentRankPage = ref(1)
+const rankTotal = ref(0)
+const dumpCurrentRankPage = ref(1)
+const dumpTotal = ref(0)
+const captchaLoading = ref(false)
+const captchaRef = ref()
+const searchs = ref([])
+const {proxy} = getCurrentInstance()
+const that = getCurrentInstance()
+searchKey.value = proxy.$route.params["searchKey"] || ''
+search.value = searchKey.value !== ''
+const activeName = ref(searchKey.value ? 'search' : 'download')
+// const activeName = 'dump'//ref(searchKey.value ? 'search' : 'download')
+
 const dump = reactive({
   version: '',
   appid: '',
@@ -256,6 +323,12 @@ const dump = reactive({
   token: '',
   code: ''
 })
+const latestVersionChange = (value) => {
+  if (value) {
+    dump.version = 'latest'
+    that.refs.ruleFormRef.resetFields('version')
+  }
+}
 const dumpRules = reactive({
   appid: [{
     required: true, message: '请输入应用名称'
@@ -298,12 +371,9 @@ const dumpRules = reactive({
   ],
   version: [
     {
-      required: true, message: '请输入版本号'
-    },
-    {
       validator: (rule, value, callback) => {
         let va = /^\d+(.\d+)+$/.test(value)
-        if (va) {
+        if (latestVersion.value || va) {
           callback()
         } else {
           callback(new Error('请输入正确的版本号'))
@@ -313,20 +383,6 @@ const dumpRules = reactive({
     }
   ]
 })
-const dumpList = ref([])
-const ranks = ref([])
-const rankCurrentRankPage = ref(1)
-const rankTotal = ref(0)
-const dumpCurrentRankPage = ref(1)
-const dumpTotal = ref(0)
-const captchaLoading = ref(false)
-const captchaRef = ref()
-const searchs = ref([])
-const {proxy} = getCurrentInstance()
-const that = getCurrentInstance()
-searchKey.value = proxy.$route.params["searchKey"] || ''
-search.value = searchKey.value !== ''
-const activeName = ref(searchKey.value ? 'search' : 'download')
 const changeCaptcha = () => {
   captchaLoading.value = true
   proxy.$axios.get('/dump/captcha', {
@@ -535,6 +591,7 @@ const dumpSubmit = (form) => {
           version: dump.version
         }
       }).then(versionResponse => {
+        that.refs.ruleFormRef.resetFields()
         if (versionResponse.data.data) {
           ElMessage({
             message: '您需要砸壳的应用版本已存在，3秒后跳转到下载页面',
@@ -664,8 +721,10 @@ onBeforeMount(() => {
   margin-top: 20px;
 
   .rank-row {
+    display: flex;
+    align-items: center;
     height: 60px;
-    line-height: 60px;
+    //line-height: 60px;
     border-bottom: 1px dashed #cccccc;
   }
 
@@ -693,34 +752,31 @@ onBeforeMount(() => {
   background-color: rgba(245, 247, 249, 1.00);
   color: rgba(130, 80, 223, 1.00);
   display: flex;
+  position: relative;
 
   .left {
     flex: 1;
   }
 
   .right {
-    margin-right: 10px;
+    position: absolute;
+    right: 10px;
   }
 }
 
-.dumpBox {
+.dumpAppid {
+  font-weight: 500;
+}
+
+.dumpTime {
+  flex: 1;
+  justify-content: center;
   display: flex;
+  font-size: 14px;
+  color: #888888;
+}
 
-  .dumpAppid {
-    margin-left: 10px;
-    font-weight: 500;
-  }
-
-  .dumpTime {
-    flex-grow: 1;
-    text-align: center;
-    font-size: 14px;
-    color: #888888;
-  }
-
-  .dumpVersion {
-    font-size: 14px;
-    margin-right: 10px;
-  }
+.dumpVersion {
+  font-size: 14px;
 }
 </style>
