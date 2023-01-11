@@ -232,7 +232,7 @@
                         placement="top"
                     >
                       <div class="dumpVersion">
-                        {{ du.version }} / <strong
+                        {{ du.version === 'latest' ? '最新版本' : du.version }} / <strong
                           :style="{color:du.format.color}">{{
                           du.format.text
                         }}</strong>
@@ -317,16 +317,22 @@ const activeName = ref(searchKey.value ? 'search' : 'download')
 // const activeName = 'dump'//ref(searchKey.value ? 'search' : 'download')
 
 const dump = reactive({
-  version: '',
+  version: latestVersion.value ? 'latest' : '',
   appid: '',
   mail: '',
   token: '',
   code: ''
 })
 const latestVersionChange = (value) => {
+  console.log(value)
   if (value) {
     dump.version = 'latest'
     that.refs.ruleFormRef.resetFields('version')
+  }else{
+    setTimeout(()=>{
+      dump.version = ''
+    })
+    console.log(dump)
   }
 }
 const dumpRules = reactive({
@@ -460,13 +466,18 @@ const tabClick = (tab) => {
     })
   }
 }
+const copyStr = (str) => {
+  const input = document.createElement("input");
+  input.readOnly = 'readonly';
+  input.value = str;
+  document.body.appendChild(input);
+  input.select();
+  input.setSelectionRange(0, input.value.length);
+  document.execCommand('Copy');
+  document.body.removeChild(input);
+}
 const storeCopy = (type) => {
-  const save = function (e) {
-    e.clipboardData.setData('text/plain', type === 1 ? 'https://store.ipadump.com' : 'source[5GHxhb1U7Lcvi4U8sWACZcW8akxVn7cEDfM=]')
-    e.preventDefault() // 阻止默认行为
-  }
-  document.addEventListener('copy', save) // 添加一个copy事件
-  document.execCommand('copy') // 执行copy方法
+  copyStr(type === 1 ? 'https://store.ipadump.com' : 'source[5GHxhb1U7Lcvi4U8sWACZcW8akxVn7cEDfM=]')
   ElMessage({
     message: '复制成功',
     type: 'success',
@@ -591,35 +602,50 @@ const dumpSubmit = (form) => {
           version: dump.version
         }
       }).then(versionResponse => {
-        that.refs.ruleFormRef.resetFields()
         if (versionResponse.data.data) {
           ElMessage({
             message: '您需要砸壳的应用版本已存在，3秒后跳转到下载页面',
             type: 'warning',
           })
+          let tmpAppid = dump.appid
+          let tmpVersion = dump.version
           setTimeout(() => {
             proxy.$router.push({
-              path: `/versions/${dump.appid}`, query: {
-                version: dump.version
+              path: `/versions/${tmpAppid}`, query: {
+                version:tmpVersion
               }
             })
           }, 3000)
+          latestVersion.value = true
+          that.refs.ruleFormRef.resetFields()
         } else {
-          proxy.$axios.post(`/dump/addOrUpdate`, dump).then(response => {
+          proxy.$axios.post(`/dump/addOrUpdate`, {
+            ...dump,
+            version: latestVersion.value ? 'latest' : dump.version
+          }).then(r => {
+            that.refs.ruleFormRef.resetFields()
+            latestVersion.value = true
+            if (r.data.code === -1) {
+              ElMessage({
+                message: r.data.msg,
+                type: 'warning',
+              })
+              return;
+            }
             proxy.$axios.get('/dump/infos').then(response => {
               if (response.data.code === 0) {
                 ElMessage({
                   message: '提交成功、请等待砸壳',
                   type: 'success',
                 })
-                dumpList.value = response.data.data.map(item => {
+                dumpList.value = response.data.data.list.map(item => {
                   return {
                     ...item,
                     format: dumpStatusFormat(item.status)
                   }
                 })
                 dump.appid = ''
-                dump.version = ''
+                dump.version = 'latest'
                 dump.token = ''
                 dump.code = ''
                 dump.mail = ''
